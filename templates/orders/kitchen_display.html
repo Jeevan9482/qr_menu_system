@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitchen Display</title>
+    <!-- 🔁 Auto refresh every 5 seconds -->
+    <meta http-equiv="refresh" content="5">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- 🔔 Notification sound -->
+    <audio id="orderSound">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    </audio>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .order-count {
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            background: #e8e8e8;
+            border-radius: 6px;
+            font-weight: 500;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sound-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sound-btn:hover {
+            background: #1a1a1a;
+        }
+
+        .sound-btn.enabled {
+            background: #4caf50;
+        }
+
+        .sound-btn.enabled:hover {
+            background: #45a049;
+        }
+
+        /* Orders Grid */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 16px;
+        }
+
+        .order-card {
+            background: #ffffff;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .order-card.highlight {
+            border-color: red;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1 }
+            50% { opacity: 0.6 }
+            100% { opacity: 1 }
+        }
+
+        /* ⬅ LEFT PANEL */
+        .order-left {
+            flex: 1;
+            border-right: 1px dashed #e5e7eb;
+            padding-right: 12px;
+        }
+
+        .order-left h3 {
+            margin: 0 0 8px;
+        }
+
+        .meta {
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer {
+            font-weight: bold;
+            color: #dc2626;
+            margin: 6px 0;
+            display: block;
+        }
+
+        .complete-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            background: #28c976;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .complete-btn:hover {
+            background: #059669;
+        }
+
+        /* ➡ RIGHT PANEL */
+        .order-right {
+            flex: 1.2;
+        }
+
+        .order-right h4 {
+            margin-top: 0;
+            margin-bottom: 6px;
+        }
+
+        ul {
+            padding-left: 18px;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #999;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Kitchen Display</h1>
+        <div class="header-right">
+            <div class="order-count" id="orderCount">
+                {% if orders %}
+                    {{ orders|length }} Order{{ orders|length|pluralize:"s" }}
+                {% else %}
+                    0 Orders
+                {% endif %}
+            </div>
+            <button id="enableSoundBtn" class="sound-btn" title="Toggle sound notifications">
+                🔔
+            </button>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="orders-grid">
+    {% for order in orders %}
+        <div class="order-card {% if order.highlight_until > now %}highlight{% endif %}"
+             data-order-id="{{ order.order_id }}"
+             data-highlight-until="{{ order.highlight_until|date:'U' }}">
+
+            <!-- ⬅ LEFT SIDE -->
+            <div class="order-left">
+                <h3>Table Number {{ order.table.table_number }}</h3>
+
+                <div class="meta">Order ID: {{ order.order_id }}</div>
+                <div class="meta">Total: ₹{{ order.total_amount }}</div>
+
+                {% if order.highlight_until > now %}
+                    <span class="timer">⏱ 05:00</span>
+                {% endif %}
+
+                <form method="post" action="/orders/complete/{{ order.order_id }}/">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'kitchen_display' %}">
+                    <button type="submit" class="complete-btn">Mark as Completed</button>
+                </form>
+            </div>
+
+            <!-- ➡ RIGHT SIDE -->
+            <div class="order-right">
+                <h4>Items</h4>
+                <ul>
+                {% for item in order.items.all %}
+                    <li><strong>{{ item.menu_item.name }} × {{ item.quantity }}</strong></li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    {% else %}
+        <p class="empty">No active orders</p>
+    {% endif %}
+
+    <!-- 🔔 Sound + ⏱ Timer Logic -->
+    <script>
+        /* 🔔 SOUND HANDLING (persistent) */
+        const soundKey = "kds_sound_enabled";
+        const orderKey = "last_kitchen_order";
+        const soundBtn = document.getElementById("enableSoundBtn");
+        const sound = document.getElementById("orderSound");
+
+        /* Restore sound state after refresh */
+        let soundEnabled = localStorage.getItem(soundKey) === "true";
+        updateSoundButtonState();
+
+        function updateSoundButtonState() {
+            if (soundEnabled) {
+                soundBtn.classList.add("enabled");
+                soundBtn.innerHTML = "🔔";
+                soundBtn.title = "Sound notifications enabled";
+            } else {
+                soundBtn.classList.remove("enabled");
+                soundBtn.innerHTML = "🔇";
+                soundBtn.title = "Sound notifications disabled";
+            }
+        }
+
+        /* Enable sound (user gesture) */
+        soundBtn.addEventListener("click", () => {
+            soundEnabled = true;
+            localStorage.setItem(soundKey, "true");
+            sound.play().catch(() => {});
+            updateSoundButtonState();
+        });
+
+        /* Play sound ONLY for new orders */
+        (function () {
+            const cards = document.querySelectorAll(".order-card");
+            if (!cards.length) return;
+
+            const newestOrderId = cards[0].dataset.orderId;
+            const lastSeen = localStorage.getItem(orderKey);
+
+            if (soundEnabled && lastSeen !== newestOrderId) {
+                sound.play().catch(() => {});
+                localStorage.setItem(orderKey, newestOrderId);
+            }
+        })();
+
+        function startTimers() {
+            const cards = document.querySelectorAll(".order-card[data-highlight-until]");
+
+            cards.forEach(card => {
+                const endTime = parseInt(card.dataset.highlightUntil) * 1000;
+                const timerEl = card.querySelector(".timer");
+
+                if (!timerEl) return;
+
+                function update() {
+                    const now = Date.now();
+                    const diff = endTime - now;
+
+                    if (diff <= 0) {
+                        timerEl.innerText = "00:00";
+                        card.classList.remove("highlight");
+                        return;
+                    }
+
+                    const min = Math.floor(diff / 60000);
+                    const sec = Math.floor((diff % 60000) / 1000);
+
+                    timerEl.innerText =
+                        "⏱ " + String(min).padStart(2, "0") + ":" +
+                        String(sec).padStart(2, "0");
+                }
+
+                update();
+                setInterval(update, 1000);
+            });
+        }
+
+        startTimers();
+    </script>
+</body>
+</html>

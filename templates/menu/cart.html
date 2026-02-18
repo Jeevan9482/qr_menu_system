@@ -1,0 +1,11 @@
+<h3>Your Cart</h3>
+
+{% for i in items %}
+<p>{{ i.item.name }} x {{ i.quantity }} = ₹{{ i.subtotal }}</p>
+{% endfor %}
+
+<h4>Total: ₹{{ total }}</h4>
+
+<a href="/orders/place/{{ hotel_id }}/{{ table_id }}/" class="btn btn-success">
+    Place Order
+</a>

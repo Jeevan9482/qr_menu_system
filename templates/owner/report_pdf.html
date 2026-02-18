@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ label }} - {{ hotel.name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm 1.8cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ---- Header ---- */
+        .report-header {
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+
+        .hotel-name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #6366f1;
+            margin: 0;
+        }
+
+        .report-title {
+            font-size: 12pt;
+            color: #475569;
+            margin: 4px 0 0 0;
+        }
+
+        .generated-at {
+            font-size: 8pt;
+            color: #94a3b8;
+            margin: 4px 0 0 0;
+        }
+
+        /* ---- Summary ---- */
+        .summary-box {
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-bottom: 18px;
+            display: table;
+            width: 100%;
+        }
+
+        .summary-cell {
+            display: table-cell;
+            width: 50%;
+        }
+
+        .summary-label {
+            font-size: 8pt;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .summary-value.revenue {
+            color: #6366f1;
+        }
+
+        /* ---- Orders ---- */
+        .order-block {
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+
+        .order-block-header {
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .order-id-text {
+            font-weight: bold;
+            font-size: 10pt;
+            color: #1e293b;
+        }
+
+        .order-meta-text {
+            font-size: 8pt;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .order-total-text {
+            font-weight: bold;
+            font-size: 11pt;
+            color: #10b981;
+            float: right;
+            margin-top: -22px;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+
+        table.items th {
+            background: #f1f5f9;
+            padding: 5px 10px;
+            text-align: left;
+            font-size: 8pt;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        table.items td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        table.items tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .text-success {
+            color: #10b981;
+        }
+
+        .text-primary {
+            color: #6366f1;
+        }
+
+        .order-footer-row td {
+            background: #f8fafc;
+            font-weight: bold;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* ---- Footer ---- */
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 8pt;
+            color: #94a3b8;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 6px;
+        }
+
+        .no-orders {
+            text-align: center;
+            color: #94a3b8;
+            padding: 30px;
+            font-size: 11pt;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-footer">
+        {{ hotel.name }} &bull; Generated on {{ generated_at|date:"d M Y, h:i A" }} &bull; Restnon POS
+    </div>
+
+    <!-- Header -->
+    <div class="report-header">
+        <p class="hotel-name">{{ hotel.name }}</p>
+        <p class="report-title">{{ label }}</p>
+        <p class="generated-at">Generated: {{ generated_at|date:"d M Y, h:i A" }}</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-box">
+        <div class="summary-cell">
+            <div class="summary-label">Total Orders</div>
+            <div class="summary-value">{{ total_count }}</div>
+        </div>
+        <div class="summary-cell">
+            <div class="summary-label">Total Revenue</div>
+            <div class="summary-value revenue">&#8377;{{ total_revenue }}</div>
+        </div>
+    </div>
+
+    <!-- Orders -->
+    {% if orders %}
+    {% for order in orders %}
+    <div class="order-block">
+        <div class="order-block-header">
+            <span class="order-id-text">{{ order.order_id }}</span>
+            &nbsp;&bull;&nbsp;
+            <span style="font-size:8pt; color:#6366f1; font-weight:bold;">
+                {% if order.order_type == 'parcel' %}Parcel{% else %}Dine In{% endif %}
+            </span>
+            {% if order.table %}
+            &nbsp;&bull;&nbsp;<span style="font-size:8pt; color:#64748b;">Table {{ order.table.table_number }}</span>
+            {% endif %}
+            <div class="order-meta-text">{{ order.created_at|date:"d M Y, h:i A" }}</div>
+            <div class="order-total-text">&#8377;{{ order.total_amount }}</div>
+        </div>
+
+        <table class="items">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.menu_item.name }}</td>
+                    <td class="text-center fw-bold">{{ item.quantity }}</td>
+                    <td class="text-right">&#8377;{{ item.price }}</td>
+                    <td class="text-right fw-bold text-success">&#8377;{{ item.get_subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="order-footer-row">
+                    <td colspan="3" class="text-right">Order Total</td>
+                    <td class="text-right text-primary">&#8377;{{ order.total_amount }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="no-orders">No orders found for this period.</div>
+    {% endif %}
+
+</body>
+
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reports & Statistics - Owner Dashboard</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --secondary-color: #64748b;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+            margin-top: 20px;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca !important;
+        }
+
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .stat-card .view-detail {
+            font-size: 0.78rem;
+            color: var(--primary-color);
+            margin-top: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .bg-purple-light {
+            background: #e0e7ff;
+            color: #6366f1;
+        }
+
+        .bg-green-light {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .bg-orange-light {
+            background: #ffedd5;
+            color: #f59e0b;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: 400px;
+        }
+
+        .top-items-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+
+            <!-- LEFT SIDEBAR -->
+            <div class="col-md-3 sidebar">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/owner/tables/">
+                            <i class="fas fa-chair"></i> Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu/owner/categories/">
+                            <i class="fas fa-folder-open"></i> Category Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_items' %}">
+                            <i class="fas fa-utensils"></i> Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders/history/">
+                            <i class="fas fa-history"></i> Order History
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
+                            <i class="fas fa-fire-burner"></i> Kitchen Display
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inventory/">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_billing' %}">
+                            <i class="fas fa-cash-register"></i> Bill / POS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'owner_reports' %}">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </a>
+                    </li>
+
+                    <div class="nav-divider"></div>
+
+                    <li class="nav-item">
+                        <a class="nav-link logout" href="/logout/">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- RIGHT CONTENT -->
+            <div class="col-md-9 main-content">
+
+                <h2 class="mb-4"><i class="fas fa-chart-line text-primary me-2"></i> Reports & Statistics</h2>
+
+                <div class="row g-4 mb-4">
+                    <!-- Daily Sales -->
+                    <div class="col-md-4">
+                        <a class="stat-card" href="{% url 'report_detail' %}?period=today">
+                            <div class="stat-icon bg-purple-light">
+                                <i class="fas fa-rupee-sign"></i>
+                            </div>
+                            <h6 class="text-muted mb-1">Today's Sales</h6>
+                            <h3>₹{{ daily_sales }}</h3>
+                            <small class="text-muted">{{ daily_orders }} Orders today</small>
+                            <span class="view-detail">View Details →</span>
+                        </a>
+                    </div>
+
+                    <!-- Monthly Sales -->
+                    <div class="col-md-4">
+                        <a class="stat-card" href="{% url 'report_detail' %}?period=monthly">
+                            <div class="stat-icon bg-green-light">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <h6 class="text-muted mb-1">Monthly Sales</h6>
+                            <h3>₹{{ monthly_sales }}</h3>
+                            <small class="text-muted">{{ monthly_orders }} Orders this month</small>
+                            <span class="view-detail">View Details →</span>
+                        </a>
+                    </div>
+
+                    <!-- Total Sales -->
+                    <div class="col-md-4">
+                        <a class="stat-card" href="{% url 'report_detail' %}?period=all">
+                            <div class="stat-icon bg-orange-light">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <h6 class="text-muted mb-1">Total Sales</h6>
+                            <h3>₹{{ total_sales }}</h3>
+                            <small class="text-muted">{{ total_orders }} All-time orders</small>
+                            <span class="view-detail">View Details →</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Chart -->
+                    <div class="col-lg-8">
+                        <div class="chart-container">
+                            <h5 class="mb-3">Sales Overview (Last 7 Days)</h5>
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Items -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h5 class="mb-3">Top Selling Items</h5>
+                                <div class="table-responsive">
+                                    <table class="table top-items-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th class="text-end">Qty</th>
+                                                <th class="text-end">Rev</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in top_items %}
+                                            <tr>
+                                                <td>{{ item.name }}</td>
+                                                <td class="text-end fw-bold">{{ item.qty }}</td>
+                                                <td class="text-end">₹{{ item.revenue }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">No data available</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+
+            const labels = JSON.parse('{{ chart_labels|escapejs }}');
+            const data = JSON.parse('{{ chart_values|escapejs }}');
+            const dates = JSON.parse('{{ chart_dates|escapejs }}');
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales (₹)',
+                        data: data,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#6366f1',
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => '₹' + ctx.parsed.y.toFixed(2)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { grid: { display: false } }
+                    },
+                    onClick: function (event, elements) {
+                        if (elements.length > 0) {
+                            const idx = elements[0].index;
+                            window.location.href = "{% url 'report_detail' %}?period=" + dates[idx];
+                        }
+                    },
+                    onHover: function (event, elements) {
+                        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    }
+                }
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

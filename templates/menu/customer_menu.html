@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ hotel.name }} | Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+
+        /* DISCOVERY / OFFERS SECTION */
+.discovery-section {
+    padding: 12px 0 4px;
+}
+
+.offer-scroll,
+.trending-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+.offer-scroll::-webkit-scrollbar,
+.trending-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.offer-card {
+    margin-left: 10px;
+    margin-right: 5px;
+    min-width: 400px;
+    height: 110px;
+    border-radius: 14px;
+    padding: 14px;
+    color: white;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.offer-card small {
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.offer-1 { background: linear-gradient(135deg, #ff6b35, #ff9f68); }
+.offer-2 { background: linear-gradient(135deg, #16a34a, #4ade80); }
+.offer-3 { background: linear-gradient(135deg, #6366f1, #818cf8); }
+
+/* TRENDING ITEMS */
+.trending-card {
+    min-width: 140px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    padding: 8px;
+}
+
+.trending-card img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.trending-card h6 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 6px 0 2px;
+}
+
+.trending-card span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* SECTION TITLE */
+.section-title {
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+
+
+
+        :root {
+            --primary: #ff6b35;
+            --success: #28a745;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding-bottom: 160px;
+        }
+
+        /* HEADER */
+        .restaurant-header {
+            background: white;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .hotel-name { font-size: 22px; font-weight: 800; }
+
+        .table-info {
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* CATEGORY BAR */
+        /* CATEGORY NAVBAR – ZOMATO STYLE */
+.category-navbar {
+    background: white;
+    position: sticky;
+    top: 66px;
+    z-index: 150;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.category-scroll {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.category-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #374151;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+.category-chip:hover {
+    background: #fff7ed;
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ACTIVE STATE */
+.category-chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 6px 14px rgba(255,107,53,.25);
+}
+
+
+        /* MENU CARD */
+        .menu-card {
+            display: flex;
+            gap: 14px;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08);
+            margin-bottom: 16px;
+        }
+
+        .menu-card-left { flex: 1; }
+
+        .food-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        /* VEG / NON-VEG ICON */
+        .food-type-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .food-type-icon::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .food-type-icon.veg {
+            border: 2px solid #2e7d32;
+        }
+        .food-type-icon.veg::after {
+            background: #2e7d32;
+        }
+
+        .food-type-icon.nonveg {
+            border: 2px solid #c62828;
+        }
+        .food-type-icon.nonveg::after {
+            background: #c62828;
+        }
+
+        .food-name { font-weight: 800; font-size: 16px; margin: 0; }
+        .food-price { font-weight: 700; margin-bottom: 6px; }
+        .food-desc { font-size: 13px; color: #6b7280; }
+
+        .menu-card-right {
+            position: relative;
+            width: 120px;
+            text-align: center;
+        }
+
+        .food-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        /* ADD BUTTON */
+        .add-btn {
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-weight: 800;
+            transition: .25s;
+        }
+
+        .add-btn.added {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* CART BUTTON */
+        .floating-cart-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 90px;
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 22px;
+            z-index: 300;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: red;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* CART SIDEBAR */
+        .cart-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 350px;
+            height: 100%;
+            background: white;
+            border-left: 1px solid var(--border);
+            transform: translateX(100%);
+            transition: .3s;
+            z-index: 400;
+        }
+
+        .cart-sidebar.active { transform: translateX(0); }
+
+        .cart-header {
+            padding: 15px;
+            font-weight: 800;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-body {
+            padding: 15px;
+            height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .cart-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        /* OVERLAY */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.4);
+            display: none;
+            z-index: 350;
+        }
+
+        .overlay.active { display: block; }
+
+        /* BOTTOM FILTER */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 250;
+        }
+
+        .bottom-navbar button {
+            background: none;
+            border: none;
+            font-weight: 700;
+        }
+
+        .bottom-navbar button.active {
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+<!-- HEADER -->
+<div class="restaurant-header">
+    <div class="container d-flex justify-content-between">
+        <h1 class="hotel-name">{{ hotel.name }}</h1>
+        <div class="table-info">Table {{ table.table_number }}</div>
+    </div>
+</div>
+
+
+
+<!-- CATEGORY BAR -->
+<div class="category-navbar">
+    <div class="category-scroll">
+        {% for category in categories %}
+            <button class="category-chip"
+                    onclick="scrollToCategory('{{ category.id }}', this)">
+                {{ category.name }}
+            </button>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- DISCOVERY / OFFERS -->
+<div class="container discovery-section">
+
+    <!-- OFFERS -->
+    <div class="mb-3">
+        
+        <div class="offer-scroll">
+            <div class="offer-card offer-1">
+                <small>Flat Discount</small>
+                <div>10% OFF on orders above ₹299</div>
+            </div>
+            <div class="offer-card offer-2">
+                <small>Special Offer</small>
+                <div>Free drink with combos</div>
+            </div>
+            <div class="offer-card offer-3">
+                <small>Trending</small>
+                <div>Chef’s Specials Today</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRENDING -->
+    <div class="mb-2">
+        <div class="section-title">🔥 Trending Now</div>
+        <div class="trending-scroll">
+            {% for category in categories %}
+                {% for item in category.menuitem_set.all|slice:":3" %}
+                    {% if item.is_available %}
+                    <div class="trending-card">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/140">
+                        {% endif %}
+                        <h6>{{ item.name }}</h6>
+                        <span>₹{{ item.price }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- MENU -->
+<div class="container mt-3">
+{% for category in categories %}
+    <h4 class="fw-bold mb-3" id="category-{{ category.id }}">{{ category.name }}</h4>
+
+    {% for item in category.menuitem_set.all %}
+    {% if item.is_available %}
+    <div class="menu-card {% if item.food_type == 'veg' %}veg{% else %}nonveg{% endif %}">
+        <div class="menu-card-left">
+            <div class="food-title">
+                <span class="food-type-icon {% if item.food_type == 'veg' %}veg{% else %}nonveg{% endif %}"></span>
+                <h5 class="food-name">{{ item.name }}</h5>
+            </div>
+            <div class="food-price">₹{{ item.price }}</div>
+            {% if item.description %}
+            <p class="food-desc">{{ item.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="menu-card-right">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" class="food-img">
+            {% else %}
+                <img src="https://via.placeholder.com/120" class="food-img">
+            {% endif %}
+            <button class="add-btn" data-item-id="{{ item.id }}">ADD</button>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+{% endfor %}
+</div>
+
+<!-- CART BUTTON -->
+<button class="floating-cart-btn" id="openCartBtn">
+    🛒
+    <span class="cart-badge" id="cartBadge">0</span>
+</button>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header d-flex justify-content-between">
+        Your Order
+        <button onclick="closeCart()">✕</button>
+    </div>
+
+    <div class="cart-body" id="cartItems">
+        <p class="text-center text-muted">Cart empty</p>
+    </div>
+
+    <div class="cart-footer">
+        <div class="d-flex justify-content-between fw-bold mb-2">
+            <span>Total</span>
+            <span>₹<span id="cartTotal">0</span></span>
+        </div>
+        <button class="btn btn-success w-100" id="placeOrderBtn" onclick="placeOrder()" disabled>
+            PLACE ORDER
+        </button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- BOTTOM FILTER -->
+<div class="bottom-navbar">
+    <button class="active" onclick="filterItems('all', this)">All</button>
+    <button onclick="filterItems('veg', this)">Veg</button>
+    <button onclick="filterItems('nonveg', this)">Non-Veg</button>
+</div>
+
+<script>
+const csrfToken = document.getElementById('csrf-token').value;
+const cartSidebar = document.getElementById('cartSidebar');
+const overlay = document.getElementById('overlay');
+const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+/* CART OPEN */
+document.getElementById('openCartBtn').onclick = () => {
+    cartSidebar.classList.add('active');
+    overlay.classList.add('active');
+};
+
+/* CART CLOSE */
+function closeCart() {
+    cartSidebar.classList.remove('active');
+    overlay.classList.remove('active');
+}
+overlay.onclick = closeCart;
+
+/* CART LOGIC (UNCHANGED) */
+function updateCart(itemId, action) {
+    fetch(`/menu/update-cart/${itemId}/${action}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken }
+    }).then(loadCart);
+}
+
+function loadCart() {
+    fetch('/menu/cart-summary/')
+    .then(res => res.json())
+    .then(data => {
+        const badge = document.getElementById('cartBadge');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+
+        badge.innerText = data.items.reduce((s,i)=>s+i.quantity,0);
+
+        if (!data.items.length) {
+            cartItems.innerHTML = '<p class="text-center text-muted">Cart empty</p>';
+            cartTotal.innerText = '0';
+            placeOrderBtn.disabled = true;
+            return;
+        }
+
+        placeOrderBtn.disabled = false;
+        cartTotal.innerText = data.total;
+
+        cartItems.innerHTML = data.items.map(i => `
+            <div class="mb-3">
+                <strong>${i.name}</strong><br>
+                ₹${i.price}
+                <div class="d-flex gap-2 mt-1">
+                    <button class="qty-btn" onclick="updateCart(${i.id},'remove')">−</button>
+                    ${i.quantity}
+                    <button class="qty-btn" onclick="updateCart(${i.id},'add')">+</button>
+                </div>
+            </div>
+        `).join('');
+    });
+}
+
+function scrollToCategory(id, btn) {
+    document.getElementById(`category-${id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    document.querySelectorAll('.category-chip')
+        .forEach(b => b.classList.remove('active'));
+
+    if (btn) btn.classList.add('active');
+}
+
+function placeOrder() {
+    fetch(`/orders/place/{{ hotel.id }}/{{ table.id }}/`)
+    .then(() => loadCart());
+}
+
+/* ADD BUTTON ANIMATION */
+document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.onclick = function () {
+        const original = this.innerText;
+        this.innerText = 'ADDED';
+        this.classList.add('added');
+        updateCart(this.dataset.itemId, 'add');
+        setTimeout(() => {
+            this.innerText = original;
+            this.classList.remove('added');
+        }, 800);
+    };
+});
+
+/* FILTER */
+function filterItems(type, el) {
+    document.querySelectorAll('.menu-card').forEach(card => {
+        card.style.display =
+            type === 'all' || card.classList.contains(type) ? 'flex' : 'none';
+    });
+    document.querySelectorAll('.bottom-navbar button')
+        .forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+
+/* SCROLL */
+function scrollToCategory(id) {
+    document.getElementById(`category-${id}`)
+        ?.scrollIntoView({ behavior: 'smooth' });
+}
+
+loadCart();
+</script>
+
+</body>
+</html>

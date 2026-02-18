@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bill / POS - Owner Dashboard</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --secondary-color: #64748b;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+            margin-top: 20px;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca !important;
+        }
+
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* POS Specific Styles */
+        .category-header {
+            background-color: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .pos-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .grand-total-bar {
+            background-color: white;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 75%;
+            /* Approximate width of col-md-9 */
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .grand-total-bar {
+                width: 100%;
+            }
+
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+
+            <!-- LEFT SIDEBAR -->
+            <div class="col-md-3 sidebar">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/owner/tables/">
+                            <i class="fas fa-chair"></i> Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu/owner/categories/">
+                            <i class="fas fa-folder-open"></i> Category Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_items' %}">
+                            <i class="fas fa-utensils"></i> Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders/history/">
+                            <i class="fas fa-history"></i> Order History
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
+                            <i class="fas fa-fire-burner"></i> Kitchen Display
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inventory/">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'owner_billing' %}">
+                            <i class="fas fa-cash-register"></i> Bill / POS
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_reports' %}">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </a>
+                    </li>
+
+                    <div class="nav-divider"></div>
+
+                    <li class="nav-item">
+                        <a class="nav-link logout" href="/logout/">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- RIGHT CONTENT -->
+            <div class="col-md-9 main-content">
+
+                <h2 class="mb-4"><i class="fas fa-cash-register text-primary me-2"></i> Update Bill / POS</h2>
+                
+                <form method="post" id="billingForm">
+                    {% csrf_token %}
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Order Type:</label>
+                                    <select name="order_type" id="orderType" class="form-control form-select"
+                                        onchange="toggleTableSelection()">
+                                        <option value="dine_in">Dine In</option>
+                                        <option value="parcel">Parcel</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6" id="tableSelection">
+                                    <label class="form-label fw-bold">Select Table:</label>
+                                    <select name="table" class="form-control form-select">
+                                        {% for table in tables %}
+                                        <option value="{{ table.id }}">Table {{ table.table_number }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">Select Items</h4>
+
+                    <div class="row">
+                        {% for category in categories %}
+                        <div class="col-12 mt-2">
+                            <div class="category-header">
+                                <h5 class="m-0">{{ category.name }}</h5>
+                            </div>
+                            <div class="table-responsive bg-white rounded shadow-sm border">
+                                <table class="table table-hover mb-0 pos-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50%;">Item</th>
+                                            <th style="width: 25%;">Price</th>
+                                            <th style="width: 25%;">Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in category.menuitem_set.all %}
+                                        {% if item.is_available %}
+                                        <tr>
+                                            <td>
+                                                <span class="fw-medium">{{ item.name }}</span>
+                                                <small class="text-muted d-block">
+                                                    {{ item.get_food_type_display }}
+                                                </small>
+                                            </td>
+                                            <td>₹{{ item.price }}</td>
+                                            <td>
+                                                <input type="hidden" name="items" value="{{ item.id }}" disabled>
+                                                <div class="input-group input-group-sm" style="width: 120px;">
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="updateQty(this, -1)">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" class="form-control qty-input text-center"
+                                                        min="0" value="0" data-price="{{ item.price }}"
+                                                        onchange="updateTotal()" readonly>
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="updateQty(this, 1)">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div style="margin-bottom: 150px;"></div>
+
+                    <div class="grand-total-bar d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase fw-bold">Grand Total</small>
+                            <h2 class="m-0 text-primary">₹<span id="grandTotal">0.00</span></h2>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow">
+                            <i class="fas fa-check-circle me-2"></i> Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleTableSelection() {
+            const type = document.getElementById('orderType').value;
+            const tableDiv = document.getElementById('tableSelection');
+
+            if (type === 'parcel') {
+                tableDiv.style.display = 'none';
+            } else {
+                tableDiv.style.display = 'block';
+            }
+        }
+
+        function updateQty(btn, change) {
+            const input = btn.parentElement.querySelector('.qty-input');
+            let newVal = parseInt(input.value) + change;
+            if (newVal < 0) newVal = 0;
+            input.value = newVal;
+
+            // Enable/disable hidden input based on quantity
+            const hiddenInput = btn.closest('td').querySelector('input[type="hidden"]');
+
+            if (newVal > 0) {
+                hiddenInput.disabled = false;
+                input.setAttribute('name', 'quantities');
+            } else {
+                hiddenInput.disabled = true;
+                input.removeAttribute('name');
+            }
+
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.qty-input').forEach(inp => {
+                const qty = parseInt(inp.value) || 0;
+                const price = parseFloat(inp.dataset.price);
+                total += qty * price;
+            });
+
+            document.getElementById('grandTotal').innerText = total.toFixed(2);
+        }
+    </script>
+
+</body>
+
+</html>

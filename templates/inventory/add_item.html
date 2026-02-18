@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Inventory Item</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #059669;
+        }
+
+        .back {
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .back a {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>➕ Add Inventory Item</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Item Name</label>
+        <input type="text" name="name" required>
+
+        <label>Initial Quantity</label>
+        <input type="number" step="0.01" name="quantity" required>
+
+        <label>Minimum Quantity</label>
+        <input type="number" step="0.01" name="minimum_quantity" required>
+
+        <label>Unit (kg, litre, pcs)</label>
+        <input type="text" name="unit" required>
+
+        <button class="btn">Save Item</button>
+    </form>
+
+    <div class="back">
+        <a href="{% url 'inventory_dashboard' %}">⬅ Back to Inventory</a>
+    </div>
+</div>
+
+</body>
+</html>

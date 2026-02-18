@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --secondary-color: #64748b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            color: var(--secondary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .back-btn:hover {
+            background: var(--light-bg);
+            border-color: var(--secondary-color);
+            color: #1e293b;
+            transform: translateX(-4px);
+        }
+
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .order-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .order-title i {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .order-status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .header-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .detail-box {
+            padding: 16px;
+            background: var(--light-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-value.amount {
+            color: var(--success-color);
+        }
+
+        .items-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-row {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .item-row:hover {
+            background-color: var(--light-bg);
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .item-name i {
+            color: var(--primary-color);
+        }
+
+        .item-quantity {
+            font-size: 0.9rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .item-price {
+            text-align: right;
+        }
+
+        .quantity-badge {
+            background: var(--light-bg);
+            color: var(--secondary-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .subtotal {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        .empty-items {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-items i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .action-section {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-complete {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-complete:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-complete:active {
+            transform: translateY(0);
+        }
+
+        .btn-print {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-print:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .header-details {
+                grid-template-columns: 1fr;
+            }
+
+            .item-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .item-price {
+                text-align: left;
+                width: 100%;
+            }
+
+            .action-section {
+                flex-direction: column;
+            }
+
+            .btn-complete,
+            .btn-print {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .back-btn,
+            .action-section,
+            .btn-print {
+                display: none;
+            }
+
+            .page-header,
+            .items-section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Back Button -->
+        <a href="/orders/dashboard/" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        <!-- Order Header -->
+        <div class="page-header">
+            <div class="header-top">
+                <h1 class="order-title">
+                    <i class="fas fa-receipt"></i>
+                    Order #{{ order.order_id }}
+                </h1>
+                <span class="order-status-badge {% if order.is_completed %}status-completed{% else %}status-pending{% endif %}">
+                    {% if order.is_completed %}
+                        <i class="fas fa-check-circle"></i> Completed
+                    {% else %}
+                        <i class="fas fa-clock"></i> Pending
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="header-details">
+                <div class="detail-box">
+                    <div class="detail-label">
+                        <i class="fas fa-chair"></i> Table Number
+                    </div>
+                    <div class="detail-value">
+                        Table {{ order.table.table_number }}
+                    </div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">
+                        <i class="fas fa-rupee-sign"></i> Total Amount
+                    </div>
+                    <div class="detail-value amount">
+                        ₹{{ order.total_amount }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Section -->
+        <div class="items-section">
+            <h2 class="section-title">
+                <i class="fas fa-list"></i> Order Items
+            </h2>
+
+            {% if order.items.all %}
+                <ul class="items-list">
+                    {% for item in order.items.all %}
+                        <li class="item-row">
+                            <div class="item-info">
+                                <div class="item-name">
+                                    <i class="fas fa-utensil-spoon"></i>
+                                    {{ item.menu_item.name }}
+                                </div>
+                                <div class="item-quantity">
+                                    <span class="quantity-badge">× {{ item.quantity }}</span>
+                                </div>
+                            </div>
+                            <div class="item-price">
+                                <div class="subtotal">₹{{ item.get_subtotal }}</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-items">
+                    <i class="fas fa-inbox"></i>
+                    <p>No items in this order.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Section -->
+        {% if not order.is_completed %}
+            <div class="action-section">
+                <a href="/orders/complete/{{ order.order_id }}/" class="btn-complete" onclick="return confirm('Are you sure you want to mark this order as completed?');">
+                    <i class="fas fa-check"></i> Mark as Completed
+                </a>
+            </div>
+        {% else %}
+            <div class="action-section">
+                <button class="btn-print" onclick="window.print();">
+                    <i class="fas fa-print"></i> Print Order
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

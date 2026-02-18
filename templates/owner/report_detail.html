@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ label }} - {{ hotel.name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --success-color: #10b981;
+            --dark-bg: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca !important;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .summary-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 28px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .summary-value.revenue {
+            color: var(--primary-color);
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .order-header:hover {
+            background: #f8fafc;
+        }
+
+        .order-id {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-meta {
+            font-size: 0.85rem;
+            color: #64748b;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .order-total {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        .items-table {
+            margin: 0;
+        }
+
+        .items-table th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 600;
+            background: #f8fafc;
+        }
+
+        .badge-dine {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .badge-parcel {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .action-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid var(--border-color);
+            color: #475569;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-pdf {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #ef4444;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-pdf:hover {
+            background: #dc2626;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .collapse-icon {
+            transition: transform 0.2s;
+        }
+
+        .collapsed .collapse-icon {
+            transform: rotate(-90deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <div class="col-md-3 sidebar">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ hotel.name }}</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="/owner/tables/"><i class="fas fa-chair"></i> Table
+                            Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/menu/owner/categories/"><i
+                                class="fas fa-folder-open"></i> Category Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_items' %}"><i
+                                class="fas fa-utensils"></i> Menu Items</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/orders/history/"><i class="fas fa-history"></i>
+                            Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank"><i
+                                class="fas fa-fire-burner"></i> Kitchen Display</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inventory/"><i class="fas fa-boxes"></i>
+                            Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_billing' %}"><i
+                                class="fas fa-cash-register"></i> Bill / POS</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'owner_reports' %}"><i
+                                class="fas fa-chart-line"></i> Reports</a></li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item"><a class="nav-link logout" href="/logout/"><i class="fas fa-sign-out-alt"></i>
+                            Logout</a></li>
+                </ul>
+            </div>
+            <div class="col-md-9 main-content">
+                <div class="action-bar">
+                    <a href="{% url 'owner_reports' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to
+                        Reports</a>
+                    <a href="{% url 'report_detail_pdf' %}?period={{ period }}" class="btn-pdf"><i
+                            class="fas fa-file-pdf"></i> Download PDF</a>
+                </div>
+                <h2 class="mb-3"><i class="fas fa-list-alt text-primary me-2"></i>{{ label }}</h2>
+                <div class="summary-bar">
+                    <div class="summary-item"><span class="summary-label">Total Orders</span><span
+                            class="summary-value">{{ total_count }}</span></div>
+                    <div class="summary-item"><span class="summary-label">Total Revenue</span><span
+                            class="summary-value revenue">₹{{ total_revenue }}</span></div>
+                </div>
+                {% if orders %}
+                {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header" data-bs-toggle="collapse" data-bs-target="#items-{{ order.order_id }}"
+                        aria-expanded="false">
+                        <div>
+                            <div class="order-id">
+                                <i class="fas fa-receipt text-primary"></i> {{ order.order_id }}
+                                <span
+                                    class="badge {% if order.order_type == 'parcel' %}badge-parcel{% else %}badge-dine{% endif %} ms-1"
+                                    style="font-size:0.72rem; padding:4px 8px; border-radius:6px;">
+                                    {% if order.order_type == 'parcel' %}Parcel{% else %}Dine In{% endif %}
+                                </span>
+                            </div>
+                            <div class="order-meta mt-1">
+                                <span><i class="fas fa-clock me-1"></i>{{ order.created_at|date:"d M Y, h:i A" }}</span>
+                                {% if order.table %}
+                                <span><i class="fas fa-chair me-1"></i>Table {{ order.table.table_number }}</span>
+                                {% endif %}
+                                <span><i class="fas fa-box me-1"></i>{{ order.items.count }} items</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="order-total">₹{{ order.total_amount }}</span>
+                            <i class="fas fa-chevron-down collapse-icon text-muted"></i>
+                        </div>
+                    </div>
+                    <div class="collapse" id="items-{{ order.order_id }}">
+                        <div class="px-3 pb-3">
+                            <table class="table items-table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items.all %}
+                                    <tr>
+                                        <td>{{ item.menu_item.name }}</td>
+                                        <td class="text-center fw-bold">{{ item.quantity }}</td>
+                                        <td class="text-end">₹{{ item.price }}</td>
+                                        <td class="text-end fw-bold text-success">₹{{ item.get_subtotal }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <td colspan="3" class="text-end fw-bold">Order Total</td>
+                                        <td class="text-end fw-bold" style="color: var(--primary-color);">
+                                            ₹{{ order.total_amount }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state"><i class="fas fa-inbox d-block"></i>
+                    <p class="mt-2">No orders found for this period.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                this.classList.toggle('collapsed');
+            });
+        });
+    </script>
+</body>
+
+</html>
