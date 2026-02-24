@@ -15,5 +15,11 @@ urlpatterns = [
     path('complete/<str:order_id>/', views.complete_order, name='complete_order'),
     path('history/', views.completed_orders, name='completed_orders'),
     path('kitchen/', views.kitchen_display, name='kitchen_display'),
-    
+    path('bill/<str:order_id>/', views.bill_receipt, name='bill_receipt'),
+
+    # Draft Bills
+    path('draft/', views.draft_list, name='draft_list'),
+    path('draft/<int:slot>/', views.draft_billing, name='draft_billing'),
+    path('draft/<int:slot>/clear/', views.draft_clear, name='draft_clear'),
+
 ]

@@ -1,74 +1,512 @@
 {% load tz %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Completed Orders</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Order History — Owner Dashboard</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --secondary-color: #64748b;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, .2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+            margin-top: 20px;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, .2);
+            color: #fecaca !important;
+        }
+
+        /* ── Main ── */
+        .main-content {
+            padding: 30px;
+        }
+
+        /* ── Filter card ── */
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .07);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .filter-card label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            margin-bottom: 6px;
+        }
+
+        /* ── Summary chips ── */
+        .summary-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 8px;
+            margin-bottom: 16px;
+        }
+
+        .summary-chip i {
+            color: var(--primary-color);
+        }
+
+        /* ── Orders table card ── */
+        .orders-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
+            border: 1px solid var(--border-color);
+        }
+
+        .orders-card-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-table {
+            margin: 0;
+        }
+
+        .history-table thead th {
+            background: #f8fafc;
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: .4px;
+            padding: 14px 18px;
+            border-bottom: 2px solid var(--border-color);
+            border-top: none;
+        }
+
+        .history-table td {
+            padding: 14px 18px;
+            vertical-align: middle;
+            border-color: var(--border-color);
+        }
+
+        .history-table tbody tr {
+            transition: background .15s;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .order-id-badge {
+            background: #ede9fe;
+            color: var(--primary-color);
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .type-badge {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .type-badge.dine_in {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .type-badge.parcel {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .items-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+            padding: 3px 0;
+            color: #334155;
+        }
+
+        .items-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .items-list .subtotal {
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+        }
+
+        .total-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .date-cell {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+
+        .date-cell .date-main {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            display: block;
+            opacity: .4;
+        }
+
+        .empty-state p {
+            font-size: 1.05rem;
+        }
+
+        /* ── View receipt link ── */
+        .receipt-link {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+
+        .receipt-link:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
-<body class="p-4">
 
+<body>
 
-<h3>📦 Completed Orders</h3>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3">
-        <input type="date" name="start" class="form-control" value="{{ request.GET.start }}">
+            <!-- LEFT SIDEBAR -->
+            <div class="col-md-3 sidebar d-none d-md-block">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/owner/tables/">
+                            <i class="fas fa-chair"></i> Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu/owner/categories/">
+                            <i class="fas fa-folder-open"></i> Category Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_items' %}">
+                            <i class="fas fa-utensils"></i> Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/orders/history/">
+                            <i class="fas fa-history"></i> Order History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
+                            <i class="fas fa-fire-burner"></i> Kitchen Display
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inventory/">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_billing' %}">
+                            <i class="fas fa-cash-register"></i> Bill / POS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_reports' %}">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </a>
+                    </li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item">
+                        <a class="nav-link logout" href="/logout/">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="col-md-9 main-content">
+                <h2 class="mb-4">
+                    <i class="fas fa-history text-primary me-2"></i> Order History
+                </h2>
+
+                <!-- Date Filter -->
+                <div class="filter-card">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label>From Date</label>
+                            <input type="date" name="start" class="form-control" value="{{ request.GET.start }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label>To Date</label>
+                            <input type="date" name="end" class="form-control" value="{{ request.GET.end }}">
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-filter me-1"></i> Filter
+                            </button>
+                            {% if request.GET.start or request.GET.end %}
+                            <a href="/orders/history/" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Summary chips -->
+                <div>
+                    <span class="summary-chip">
+                        <i class="fas fa-receipt"></i>
+                        {{ orders|length }} Order{{ orders|length|pluralize }}
+                    </span>
+                    <span class="summary-chip">
+                        <i class="fas fa-coins"></i>
+                        ₹{% with total=0 %}{% for o in orders %}{% endfor %}
+                        {{ orders|length }}
+                        {% endwith %}
+                        <!-- Revenue computed inline in JS below -->
+                        <span id="totalRevenue">—</span>
+                    </span>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="orders-card">
+                    <div class="orders-card-header">
+                        <i class="fas fa-list-alt text-primary"></i> Completed Orders
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table history-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:14%">Order ID</th>
+                                    <th style="width:10%">Type</th>
+                                    <th style="width:8%">Table</th>
+                                    <th style="width:38%">Items</th>
+                                    <th style="width:12%">Total</th>
+                                    <th style="width:18%">Date &amp; Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td>
+                                        <div class="order-id-badge">{{ order.order_id }}</div>
+                                        <a href="{% url 'bill_receipt' order.order_id %}" class="receipt-link mt-1">
+                                            <i class="fas fa-receipt"></i> View Bill
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="type-badge {{ order.order_type }}">
+                                            {{ order.get_order_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if order.table %}
+                                        <i class="fas fa-chair text-primary me-1"></i>{{ order.table.table_number }}
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <ul class="items-list">
+                                            {% for item in order.items.all %}
+                                            <li>
+                                                <span>{{ item.menu_item.name }} &times; {{ item.quantity }}</span>
+                                                <span class="subtotal ms-auto">₹{{ item.get_subtotal }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <span class="total-amount" data-amount="{{ order.total_amount }}">
+                                            ₹{{ order.total_amount }}
+                                        </span>
+                                    </td>
+                                    <td class="date-cell">
+                                        <div class="date-main">{{ order.created_at|localtime|date:"d M Y" }}</div>
+                                        {{ order.created_at|localtime|time:"H:i" }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state">
+                                            <i class="fas fa-box-open"></i>
+                                            <p>No completed orders found.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div><!-- /col-md-9 -->
+        </div>
     </div>
-    <div class="col-md-3">
-        <input type="date" name="end" class="form-control" value="{{ request.GET.end }}">
-    </div>
-    <div class="col-md-3">
-        <button class="btn btn-primary">Filter</button>
-    </div>
-</form>
-<div class="position-fixed top-0 end-0 p-3">
-    <a href="/orders/dashboard/" class="btn btn-secondary">
-        🏠 Home
-    </a>
-</div>
-<table class="table table-bordered align-middle">
-<thead class="table-dark">
-<tr>
-    <th>Order ID</th>
-    <th>Table</th>
-    <th>Items</th>
-    <th>Total</th>
-    <th>Date</th>
-</tr>
-</thead>
 
-<tbody>
-{% for order in orders %}
-<tr>
-    <td><strong>{{ order.order_id }}</strong></td>
-    <td>{{ order.table.table_number }}</td>
-
-    <td>
-        <ul class="mb-0 ps-3">
-            {% for item in order.items.all %}
-                <li>
-                    {{ item.menu_item.name }}
-                    × {{ item.quantity }}
-                    — ₹{{ item.price }} each
-                    <br>
-                    <small class="text-muted">
-                        Subtotal: ₹{{ item.get_subtotal }}
-                    </small>
-                </li>
-            {% endfor %}
-        </ul>
-    </td>
-
-    <td><strong>₹{{ order.total_amount }}</strong></td>
-    <td>{{ order.created_at|localtime|date:"d M Y H:i" }}</td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="5" class="text-center">No orders found</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Compute and display total revenue from data attributes
+        let revenue = 0;
+        document.querySelectorAll('[data-amount]').forEach(el => {
+            revenue += parseFloat(el.dataset.amount) || 0;
+        });
+        document.getElementById('totalRevenue').textContent = '₹' + revenue.toFixed(2);
+    </script>
 
 </body>
+
 </html>

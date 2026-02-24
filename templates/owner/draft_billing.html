@@ -1,0 +1,718 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Draft Slot #{{ slot }} - Owner Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --muted: #64748b;
+            --dark: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+            overflow-y: auto;
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, .2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, .2);
+            color: #fecaca !important;
+        }
+
+        .main-content {
+            padding: 24px 28px;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .breadcrumb-bar a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .breadcrumb-bar a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-bar .sep {
+            color: #cbd5e1;
+        }
+
+        .breadcrumb-bar .current {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Slot pill */
+        .slot-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            color: var(--primary);
+            border: 1.5px solid #c4b5fd;
+            border-radius: 100px;
+            padding: 5px 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .slot-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .slot-pill .dot.active {
+            background: var(--success);
+        }
+
+        /* Category */
+        .cat-header {
+            background: linear-gradient(135deg, #f1f5f9, #e8edf5);
+            padding: 10px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cat-header h5 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        .cat-header i {
+            color: var(--primary);
+        }
+
+        /* Item cards */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color .2s, box-shadow .2s, transform .15s;
+            position: relative;
+        }
+
+        .item-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, .12);
+            transform: translateY(-2px);
+        }
+
+        .item-card.has-qty {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #fafafe, #f5f3ff);
+        }
+
+        .food-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .food-dot::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .food-dot.veg {
+            color: #16a34a;
+        }
+
+        .food-dot.veg::before {
+            background: #16a34a;
+        }
+
+        .food-dot.nonveg {
+            color: #dc2626;
+        }
+
+        .food-dot.nonveg::before {
+            background: #dc2626;
+        }
+
+        .item-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: #1e293b;
+            line-height: 1.3;
+            flex: 1;
+        }
+
+        .item-price {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+        }
+
+        .qty-btn {
+            background: transparent;
+            border: none;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s, color .15s;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .qty-val {
+            flex: 1;
+            min-width: 30px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: white;
+            border: none;
+            border-left: 1.5px solid var(--border);
+            border-right: 1.5px solid var(--border);
+            height: 34px;
+            line-height: 34px;
+        }
+
+        .qty-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-card.has-qty .qty-badge {
+            display: flex;
+        }
+
+        /* Order Panel */
+        .order-panel {
+            background: white;
+            border-radius: 14px;
+            border: 2px solid #c4b5fd;
+            overflow: hidden;
+            position: sticky;
+            top: 24px;
+            max-height: calc(100vh - 160px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .op-header {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            color: white;
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .op-meta {
+            padding: 10px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .op-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .op-line {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            gap: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.85rem;
+        }
+
+        .op-line:last-child {
+            border-bottom: none;
+        }
+
+        .op-line .name {
+            flex: 1;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .op-line .qty-tag {
+            background: #ede9fe;
+            color: var(--primary);
+            border-radius: 100px;
+            padding: 1px 9px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .op-line .sub {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.82rem;
+        }
+
+        .op-empty {
+            text-align: center;
+            padding: 30px 10px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .op-total {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            border-top: 2px solid #c4b5fd;
+            flex-shrink: 0;
+        }
+
+        .op-total .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #4c1d95;
+            text-transform: uppercase;
+        }
+
+        .op-total .amount {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* Action Bar */
+        .action-bar {
+            background: white;
+            padding: 16px 28px;
+            border-top: 2px solid #c4b5fd;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 75%;
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, .08);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .action-bar .lbl {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .action-bar .amt {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .action-bar {
+                width: 100%;
+                padding: 12px 16px;
+            }
+
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+
+            <!-- SIDEBAR -->
+            <div class="col-md-3 sidebar d-none d-md-block">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="/owner/tables/"><i class="fas fa-chair"></i> Table
+                            Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/menu/owner/categories/"><i
+                                class="fas fa-folder-open"></i> Category Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_items' %}"><i
+                                class="fas fa-utensils"></i> Menu Items</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/orders/history/"><i class="fas fa-history"></i>
+                            Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank"><i
+                                class="fas fa-fire-burner"></i> Kitchen Display</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inventory/"><i class="fas fa-boxes"></i>
+                            Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_billing' %}"><i
+                                class="fas fa-cash-register"></i> Bill / POS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_reports' %}"><i
+                                class="fas fa-chart-line"></i> Reports</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'draft_list' %}"><i
+                                class="fas fa-file-invoice"></i> Draft Bills</a></li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item"><a class="nav-link logout" href="/logout/"><i class="fas fa-sign-out-alt"></i>
+                            Logout</a></li>
+                </ul>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="col-md-9 main-content">
+
+                <div class="breadcrumb-bar">
+                    <a href="{% url 'draft_list' %}"><i class="fas fa-file-invoice me-1"></i>Draft Bills</a>
+                    <span class="sep">â€º</span>
+                    <span class="current">Slot #{{ slot }}</span>
+                </div>
+
+                <div class="slot-pill">
+                    {% if draft_order %}<span class="dot active"></span>{% else %}<span class="dot"></span>{% endif %}
+                    Draft Slot #{{ slot }} — {% if draft_order %}{{ draft_order.order_id }}{% else %}Empty{% endif %}
+                </div>
+
+                <div class="row">
+                    <!-- MENU CARDS -->
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-th text-primary me-2"></i>Select Items to Add</h5>
+
+                        {% if not draft_order %}
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Order Type</label>
+                                        <select name="order_type" id="orderType" class="form-control form-select"
+                                            onchange="toggleTable()" form="draftForm">
+                                            <option value="dine_in">Dine In</option>
+                                            <option value="parcel">Parcel</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="tableSelection">
+                                        <label class="form-label fw-bold">Select Table</label>
+                                        <select name="table" class="form-control form-select" form="draftForm">
+                                            {% for tbl in tables %}<option value="{{ tbl.id }}">Table {{
+                                                tbl.table_number }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% for category in categories %}
+                        <div class="mb-4">
+                            <div class="cat-header">
+                                <i class="fas fa-tag"></i>
+                                <h5>{{ category.name }}</h5>
+                            </div>
+                            <div class="items-grid">
+                                {% for item in category.menuitem_set.all %}
+                                {% if item.is_available %}
+                                <div class="item-card" id="card-{{ item.id }}">
+                                    <span class="qty-badge" id="badge-{{ item.id }}">0</span>
+                                    <span class="food-dot {{ item.food_type }}">{{ item.get_food_type_display }}</span>
+                                    <div class="item-name">{{ item.name }}</div>
+                                    <div class="item-price">₹{{ item.price }}</div>
+                                    <!-- Always submit item id and qty (view filters qty=0) -->
+                                    <input type="hidden" name="items" value="{{ item.id }}" form="draftForm">
+                                    <div class="qty-controls">
+                                        <button type="button" class="qty-btn" onclick="changeQty(this,-1)"><i
+                                                class="fas fa-minus"></i></button>
+                                        <input type="number" class="qty-val" name="quantities" form="draftForm" min="0"
+                                            value="0" data-price="{{ item.price }}" data-item-id="{{ item.id }}"
+                                            readonly>
+                                        <button type="button" class="qty-btn" onclick="changeQty(this,1)"><i
+                                                class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div style="height: 100px;"></div>
+                    </div>
+
+                    <!-- ORDER PANEL -->
+                    <div class="col-md-4">
+                        <div class="order-panel mt-4">
+                            <div class="op-header">
+                                <i class="fas fa-receipt"></i>
+                                Draft #{{ slot }}{% if draft_order %} — {{ draft_order.order_id }}{% endif %}
+                            </div>
+
+                            {% if draft_order %}
+                            <div class="op-meta">
+                                <span class="me-3"><i class="fas fa-tag me-1"></i>{{ draft_order.get_order_type_display }}</span>
+
+                                {% if draft_order.table %}<span><i class="fas fa-chair me-1"></i>Table {{ draft_order.table.table_number }}</span>{% endif %}
+
+                            </div>
+                            {% endif %}
+
+                            <div class="op-items">
+                                {% if draft_order %}
+                                {% for oi in draft_order.items.all %}
+                                <div class="op-line">
+                                    <div class="name">{{ oi.menu_item.name }}</div>
+                                    <span class="qty-tag">Ã—{{ oi.quantity }}</span>
+                                    <span class="sub">₹{{ oi.get_subtotal }}</span>
+                                </div>
+                                {% empty %}
+                                <div class="op-empty"><i class="fas fa-utensils d-block mb-2 fs-4"></i>No items yet
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="op-empty"><i class="fas fa-file-circle-plus d-block mb-2 fs-4"></i>Select
+                                    items and save as draft</div>
+                                {% endif %}
+                            </div>
+
+                            {% if draft_order %}
+                            <div class="op-total">
+                                <div class="label">Running Total</div>
+                                <div class="amount">₹{{ draft_order.total_amount }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if draft_order %}
+                        <form method="post" action="{% url 'draft_clear' slot %}" class="mt-3"
+                            onsubmit="return confirm('Clear this draft? This cannot be undone.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100"><i
+                                    class="fas fa-trash me-2"></i>Clear Draft Slot #{{ slot }}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN FORM: receives all inputs via form="draftForm" -->
+    <form method="post" id="draftForm" action="{% url 'draft_billing' slot %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="formAction" value="save">
+    </form>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+        <div>
+            <div class="lbl">Adding to Draft</div>
+            <div class="amt">₹<span id="grandTotal">0.00</span><small id="itemCount" class="text-muted fw-normal"
+                    style="font-size:0.82rem"></small></div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            {% if draft_order %}
+            <button type="button" class="btn btn-primary btn-lg px-4 shadow" onclick="doSubmit('save')"><i
+                    class="fas fa-floppy-disk me-2"></i>Add &amp; Save Draft</button>
+            <button type="button" class="btn btn-success btn-lg px-4 shadow" onclick="doSubmit('close')"><i
+                    class="fas fa-check-circle me-2"></i>Close &amp; Print Bill</button>
+            {% else %}
+            <button type="button" class="btn btn-primary btn-lg px-5 shadow" onclick="doSubmit('save')"><i
+                    class="fas fa-floppy-disk me-2"></i>Save as Draft</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleTable() {
+            const t = document.getElementById('orderType').value;
+            const d = document.getElementById('tableSelection');
+            if (d) d.style.display = t === 'parcel' ? 'none' : 'block';
+        }
+
+        function changeQty(btn, delta) {
+            const card = btn.closest('.item-card');
+            const input = card.querySelector('.qty-val');
+            let val = Math.max(0, parseInt(input.value) + delta);
+            input.value = val;
+
+            const id = input.dataset.itemId;
+            const badge = document.getElementById('badge-' + id);
+            if (val > 0) {
+                card.classList.add('has-qty');
+                badge.textContent = val;
+            } else {
+                card.classList.remove('has-qty');
+            }
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0, count = 0;
+            document.querySelectorAll('.qty-val').forEach(inp => {
+                const qty = parseInt(inp.value) || 0;
+                total += qty * parseFloat(inp.dataset.price);
+                if (qty > 0) count++;
+            });
+            document.getElementById('grandTotal').innerText = total.toFixed(2);
+            const el = document.getElementById('itemCount');
+            el.textContent = count > 0 ? ' — ' + count + ' item' + (count > 1 ? 's' : '') : '';
+        }
+
+        function doSubmit(action) {
+            if (action === 'close') {
+                document.getElementById('formAction').value = 'close';
+                document.getElementById('draftForm').submit();
+                return;
+            }
+            const anySelected = Array.from(document.querySelectorAll('.qty-val')).some(i => parseInt(i.value) > 0);
+            if (!anySelected) {
+                alert('Please select at least one item to add to the draft.');
+                return;
+            }
+            document.getElementById('formAction').value = 'save';
+            document.getElementById('draftForm').submit();
+        }
+    </script>
+</body>
+
+</html>

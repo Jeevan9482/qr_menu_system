@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bill Receipt — {{ order.order_id }}</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --success-color: #10b981;
+            --dark-bg: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, .2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+            margin-top: 20px;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, .2);
+            color: #fecaca !important;
+        }
+
+        /* ── Main content ────────────────────────────────────── */
+        .main-content {
+            padding: 30px;
+        }
+
+        /* ── Receipt card ────────────────────────────────────── */
+        .receipt-wrapper {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .receipt-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .12);
+        }
+
+        .receipt-header {
+            background: linear-gradient(135deg, var(--primary-color), #818cf8);
+            color: white;
+            padding: 28px 32px 20px;
+            text-align: center;
+        }
+
+        .receipt-header .hotel-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+
+        .receipt-header .order-id {
+            font-size: 0.9rem;
+            opacity: .85;
+            margin-top: 4px;
+        }
+
+        .receipt-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 16px 32px;
+            background: #f8fafc;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .receipt-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .receipt-meta i {
+            color: var(--primary-color);
+        }
+
+        .receipt-body {
+            padding: 24px 32px;
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .receipt-table thead tr {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .receipt-table thead th {
+            padding: 10px 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: .4px;
+        }
+
+        .receipt-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .receipt-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .receipt-table .item-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .receipt-table .text-end {
+            text-align: right;
+        }
+
+        .receipt-total {
+            margin-top: 16px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .receipt-total .label {
+            font-weight: 600;
+            color: #4c1d95;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .receipt-total .amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .receipt-footer {
+            padding: 20px 32px 28px;
+            text-align: center;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .receipt-footer small {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        /* ── Action buttons ──────────────────────────────────── */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            justify-content: center;
+        }
+
+        .action-buttons .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 10px 22px;
+        }
+
+        /* ── Success badge ───────────────────────────────────── */
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, .12);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, .3);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .success-badge i {
+            color: var(--success-color);
+        }
+
+        /* ── Print styles (only the receipt prints) ──────────── */
+        @media print {
+
+            /* Hide everything except the receipt */
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-receipt,
+            #printable-receipt * {
+                visibility: visible;
+            }
+
+            #printable-receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            /* Thermal-style print */
+            .receipt-card {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-width: 80mm;
+                margin: 0 auto;
+                font-size: 11px;
+            }
+
+            .receipt-header {
+                background: #333 !important;
+            }
+
+            .action-buttons,
+            .action-buttons * {
+                display: none !important;
+            }
+
+            .receipt-total .amount {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+
+            <!-- LEFT SIDEBAR -->
+            <div class="col-md-3 sidebar d-none d-md-block">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ hotel.name }}</span>
+                </div>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/owner/tables/">
+                            <i class="fas fa-chair"></i> Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu/owner/categories/">
+                            <i class="fas fa-folder-open"></i> Category Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_items' %}">
+                            <i class="fas fa-utensils"></i> Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders/history/">
+                            <i class="fas fa-history"></i> Order History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
+                            <i class="fas fa-fire-burner"></i> Kitchen Display
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/inventory/">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'owner_billing' %}">
+                            <i class="fas fa-cash-register"></i> Bill / POS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_reports' %}">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </a>
+                    </li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item">
+                        <a class="nav-link logout" href="/logout/">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- RIGHT CONTENT -->
+            <div class="col-md-9 main-content">
+
+                <!-- Heading -->
+                <h2 class="mb-4">
+                    <i class="fas fa-receipt text-primary me-2"></i> Bill Receipt
+                </h2>
+
+                <div class="receipt-wrapper">
+
+                    <!-- Success badge -->
+                    <div class="text-center">
+                        <div class="success-badge">
+                            <i class="fas fa-check-circle"></i>
+                            Order placed successfully
+                        </div>
+                    </div>
+
+                    <!-- Printable receipt block -->
+                    <div id="printable-receipt">
+                        <div class="receipt-card">
+
+                            <!-- Hotel + Order ID -->
+                            <div class="receipt-header">
+                                <div class="hotel-name">
+                                    <i class="fas fa-building me-2"></i>{{ hotel.name }}
+                                </div>
+                                <div class="order-id">Order ID: <strong>{{ order.order_id }}</strong></div>
+                            </div>
+
+                            <!-- Meta info row -->
+                            <div class="receipt-meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ order.created_at|date:"d M Y" }}</span>
+                                <span><i class="fas fa-clock"></i> {{ order.created_at|time:"H:i" }}</span>
+                                <span>
+                                    <i class="fas fa-tag"></i>
+                                    {{ order.get_order_type_display }}
+                                </span>
+                                {% if order.table %}
+                                <span><i class="fas fa-chair"></i> Table {{ order.table.table_number }}</span>
+                                {% else %}
+                                <span><i class="fas fa-box"></i> Parcel / Takeaway</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Items table -->
+                            <div class="receipt-body">
+                                <table class="receipt-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:50%">Item</th>
+                                            <th class="text-end">Qty</th>
+                                            <th class="text-end">Rate</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items.all %}
+                                        <tr>
+                                            <td class="item-name">{{ item.menu_item.name }}</td>
+                                            <td class="text-end">{{ item.quantity }}</td>
+                                            <td class="text-end">₹{{ item.price }}</td>
+                                            <td class="text-end fw-semibold">₹{{ item.get_subtotal }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                                <!-- Grand Total -->
+                                <div class="receipt-total mt-4">
+                                    <span class="label"><i class="fas fa-coins me-2"></i>Grand Total</span>
+                                    <span class="amount">₹{{ order.total_amount }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Footer note -->
+                            <div class="receipt-footer">
+                                <small>Thank you for your order! 🙏</small>
+                            </div>
+
+                        </div><!-- /receipt-card -->
+
+                        <!-- Action buttons (hidden on print) -->
+                        <div class="action-buttons">
+                            <button onclick="window.print()" class="btn btn-primary">
+                                <i class="fas fa-print me-2"></i>Print Bill
+                            </button>
+                            <a href="{% url 'owner_billing' %}" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-2"></i>New Order
+                            </a>
+                            <a href="{% url 'owner_orders' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>View All Orders
+                            </a>
+                        </div>
+                    </div><!-- /printable-receipt -->
+
+                </div><!-- /receipt-wrapper -->
+
+            </div><!-- /col-md-9 -->
+        </div><!-- /row -->
+    </div><!-- /container-fluid -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

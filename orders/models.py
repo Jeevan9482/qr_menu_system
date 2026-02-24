@@ -19,6 +19,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
+    draft_slot = models.IntegerField(null=True, blank=True)  # 1-10 = draft slot; null = regular order
 
    
     is_new = models.BooleanField(default=True)

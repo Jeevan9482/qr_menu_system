@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Draft Bills - Owner Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #64748b;
+            --dark-bg: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+            overflow-y: auto;
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-header i {
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, .2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, .2);
+            color: #fecaca !important;
+        }
+
+        .main-content {
+            padding: 28px 32px;
+        }
+
+        /* ── Slot Cards ── */
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .slot-card {
+            border-radius: 16px;
+            border: 2.5px dashed #cbd5e1;
+            padding: 24px 20px;
+            background: white;
+            cursor: pointer;
+            transition: border-color .2s, box-shadow .2s, transform .15s;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .slot-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, .14);
+            transform: translateY(-3px);
+        }
+
+        .slot-card.empty {
+            color: #94a3b8;
+        }
+
+        .slot-card.empty .slot-icon {
+            color: #cbd5e1;
+        }
+
+        .slot-card.active {
+            border-style: solid;
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #fafafe, #f0efff);
+        }
+
+        .slot-number {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--secondary-color);
+        }
+
+        .slot-card.active .slot-number {
+            color: var(--primary-color);
+        }
+
+        .slot-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .slot-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .slot-card.empty .slot-label {
+            color: #94a3b8;
+        }
+
+        .slot-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+        }
+
+        .slot-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slot-meta i {
+            width: 14px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .slot-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 100px;
+            padding: 2px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .slot-total {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+
+            <!-- SIDEBAR -->
+            <div class="col-md-3 sidebar d-none d-md-block">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="/owner/tables/"><i class="fas fa-chair"></i> Table
+                            Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/menu/owner/categories/"><i
+                                class="fas fa-folder-open"></i> Category Management</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_items' %}"><i
+                                class="fas fa-utensils"></i> Menu Items</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/orders/history/"><i class="fas fa-history"></i>
+                            Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank"><i
+                                class="fas fa-fire-burner"></i> Kitchen Display</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/inventory/"><i class="fas fa-boxes"></i>
+                            Inventory</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_billing' %}"><i
+                                class="fas fa-cash-register"></i> Bill / POS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'owner_reports' %}"><i
+                                class="fas fa-chart-line"></i> Reports</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'draft_list' %}"><i
+                                class="fas fa-file-invoice"></i> Draft Bills</a></li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item"><a class="nav-link logout" href="/logout/"><i class="fas fa-sign-out-alt"></i>
+                            Logout</a></li>
+                </ul>
+            </div>
+
+            <!-- MAIN -->
+            <div class="col-md-9 main-content">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <h2 class="m-0"><i class="fas fa-file-invoice text-primary me-2"></i>Draft Bills</h2>
+                    <span class="badge bg-primary rounded-pill fs-6">10 Slots</span>
+                </div>
+                <p class="text-muted mb-4">Select a slot to open or continue a draft order. Items are sent to the
+                    Kitchen Display immediately when saved.</p>
+
+                <div class="slots-grid">
+                    {% for s in slots %}
+                    <a href="{% url 'draft_billing' s.slot %}"
+                        class="slot-card {% if s.order %}active{% else %}empty{% endif %}">
+
+                        {% if s.order %}
+                        <span class="slot-badge">{{ s.item_count }} item{{ s.item_count|pluralize }}</span>
+                        {% endif %}
+
+                        <div class="slot-number">Draft Slot #{{ s.slot }}</div>
+
+                        <div class="slot-icon">
+                            <i
+                                class="fas {% if s.order %}fa-file-invoice-dollar{% else %}fa-file-circle-plus{% endif %}"></i>
+                        </div>
+
+                        {% if s.order %}
+                        <div class="slot-label">{{ s.order.order_id }}</div>
+                        <div class="slot-meta">
+                            <span><i class="fas fa-tag"></i>{{ s.order.get_order_type_display }}</span>
+                            {% if s.order.table %}
+                            <span><i class="fas fa-chair"></i>Table {{ s.order.table.table_number }}</span>
+                            {% endif %}
+                            <span><i class="fas fa-clock"></i>{{ s.order.created_at|time:"H:i" }}</span>
+                        </div>
+                        <div class="slot-total">₹{{ s.order.total_amount }}</div>
+                        {% else %}
+                        <div class="slot-label">Empty</div>
+                        <div class="slot-meta">
+                            <span><i class="fas fa-plus"></i>Click to start a new draft</span>
+                        </div>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

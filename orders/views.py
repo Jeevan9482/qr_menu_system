@@ -243,7 +243,7 @@ def owner_billing(request):
         quantities = request.POST.getlist('quantities')
         
         if not item_ids:
-             return redirect('owner_billing')
+            return redirect('owner_billing')
 
         # Create Order
         order = Order(
@@ -282,7 +282,7 @@ def owner_billing(request):
         # Deduct Inventory
         deduct_inventory(order)
 
-        return redirect('owner_orders')
+        return redirect('bill_receipt', order_id=order.order_id)
 
     # GET Request
     categories = Category.objects.filter(hotel=hotel, is_active=True).prefetch_related('menuitem_set')
@@ -292,6 +292,7 @@ def owner_billing(request):
         'categories': categories, 
         'tables': tables
     })
+
 
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -458,3 +459,152 @@ def report_detail_pdf(request):
     response['Content-Disposition'] = f'attachment; filename="{fname}.pdf"'
     return response
 
+
+@login_required
+def bill_receipt(request, order_id):
+    hotel = request.user.hotelowner.hotel
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__menu_item'),
+        order_id=order_id,
+        hotel=hotel
+    )
+    return render(request, 'owner/bill_receipt.html', {'order': order, 'hotel': hotel})
+
+
+# ──────────────────────────────────────────────
+# DRAFT BILLS
+# ──────────────────────────────────────────────
+
+DRAFT_SLOTS = list(range(1, 11))  # slots 1-10
+
+
+@login_required
+def draft_list(request):
+    """Shows the 10 draft slots for the hotel."""
+    hotel = request.user.hotelowner.hotel
+
+    # Fetch any open draft orders for this hotel
+    drafts = {
+        d.draft_slot: d
+        for d in Order.objects.filter(
+            hotel=hotel,
+            draft_slot__isnull=False,
+            is_completed=False
+        ).prefetch_related('items')
+    }
+
+    slots = []
+    for n in DRAFT_SLOTS:
+        order = drafts.get(n)
+        slots.append({
+            'slot': n,
+            'order': order,
+            'item_count': order.items.count() if order else 0,
+        })
+
+    return render(request, 'owner/draft_list.html', {'slots': slots})
+
+
+@login_required
+def draft_billing(request, slot):
+    """Billing form for a specific draft slot (1-10)."""
+    if slot not in DRAFT_SLOTS:
+        return redirect('draft_list')
+
+    hotel = request.user.hotelowner.hotel
+
+    # Load existing open draft for this slot, if any
+    draft_order = Order.objects.filter(
+        hotel=hotel, draft_slot=slot, is_completed=False
+    ).prefetch_related('items__menu_item').first()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'save')  # 'save' | 'close'
+
+        # ── CLOSE: finalise → receipt ──
+        if action == 'close':
+            if draft_order:
+                draft_order.is_completed = True
+                draft_order.draft_slot = None   # free the slot
+                draft_order.save()
+                return redirect('bill_receipt', order_id=draft_order.order_id)
+            return redirect('draft_billing', slot=slot)
+
+        # ── SAVE: create or update draft ──
+        item_ids   = request.POST.getlist('items')
+        quantities = request.POST.getlist('quantities')
+
+        # Check if at least one item has qty > 0
+        has_items = any(int(q) > 0 for q in quantities if q.isdigit())
+        if not has_items:
+            return redirect('draft_billing', slot=slot)
+
+        if draft_order is None:
+            # Create a new draft order for this slot
+            order_type = request.POST.get('order_type', 'dine_in')
+            draft_order = Order(
+                hotel=hotel,
+                order_id=f"DFT{slot:02d}{uuid.uuid4().hex[:4].upper()}",
+                order_type=order_type,
+                total_amount=Decimal('0.00'),
+                is_new=True,
+                is_completed=False,
+                draft_slot=slot,
+            )
+            if order_type == 'dine_in':
+                table_id = request.POST.get('table')
+                if table_id:
+                    draft_order.table = Table.objects.get(id=table_id, hotel=hotel)
+            draft_order.save()
+
+        total_added = Decimal('0.00')
+        for i, item_id in enumerate(item_ids):
+            qty = int(quantities[i]) if i < len(quantities) else 0
+            if qty > 0:
+                menu_item = MenuItem.objects.get(id=item_id, hotel=hotel)
+                # Merge if item already exists
+                existing = OrderItem.objects.filter(
+                    order=draft_order, menu_item=menu_item
+                ).first()
+                if existing:
+                    existing.quantity += qty
+                    existing.save()
+                    total_added += menu_item.price * qty
+                else:
+                    OrderItem.objects.create(
+                        order=draft_order,
+                        menu_item=menu_item,
+                        quantity=qty,
+                        price=menu_item.price,
+                    )
+                    total_added += menu_item.price * qty
+
+        draft_order.total_amount += total_added
+        draft_order.mark_for_kitchen()   # show in KDS
+        draft_order.save()
+
+        deduct_inventory(draft_order)
+
+        return redirect('draft_billing', slot=slot)
+
+    # ── GET ──
+    categories = Category.objects.filter(hotel=hotel, is_active=True).prefetch_related('menuitem_set')
+    tables = Table.objects.filter(hotel=hotel)
+
+    return render(request, 'owner/draft_billing.html', {
+        'slot': slot,
+        'draft_order': draft_order,
+        'categories': categories,
+        'tables': tables,
+    })
+
+
+@login_required
+def draft_clear(request, slot):
+    """Clears (deletes) the draft order for a slot."""
+    if request.method == 'POST':
+        hotel = request.user.hotelowner.hotel
+        Order.objects.filter(
+            hotel=hotel, draft_slot=slot, is_completed=False
+        ).delete()
+    return redirect('draft_list')

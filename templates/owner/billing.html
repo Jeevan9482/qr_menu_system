@@ -12,9 +12,6 @@
     <style>
         :root {
             --primary-color: #6366f1;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
             --secondary-color: #64748b;
             --dark-bg: #1e293b;
             --light-bg: #f8fafc;
@@ -30,13 +27,15 @@
             min-height: 100vh;
         }
 
+        /* ── Sidebar ── */
         .sidebar {
             background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
             min-height: 100vh;
             padding: 30px 20px;
             position: sticky;
             top: 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+            overflow-y: auto;
         }
 
         .hotel-header {
@@ -45,7 +44,7 @@
             color: white;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -68,14 +67,14 @@
             padding: 12px 16px !important;
             border-radius: 8px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all .3s ease;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .nav-link:hover {
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, .2);
             color: white !important;
             transform: translateX(4px);
         }
@@ -86,7 +85,7 @@
         }
 
         .nav-divider {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, .1);
             margin: 20px 0;
         }
 
@@ -96,43 +95,208 @@
         }
 
         .nav-link.logout:hover {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, .2);
             color: #fecaca !important;
         }
 
+        /* ── Main ── */
         .main-content {
-            padding: 30px;
+            padding: 24px 28px;
             overflow-y: auto;
         }
 
-        /* POS Specific Styles */
+        /* ── Category header ── */
         .category-header {
-            background-color: #f1f5f9;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #f1f5f9, #e8edf5);
+            padding: 10px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
             border-left: 4px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .pos-table th {
-            background-color: #f8fafc;
-            color: #64748b;
+        .category-header h5 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+
+        .category-header i {
+            color: var(--primary-color);
+        }
+
+        /* ── Item Cards ── */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color .2s, box-shadow .2s, transform .15s;
+            position: relative;
+        }
+
+        .item-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, .12);
+            transform: translateY(-2px);
+        }
+
+        .item-card.has-qty {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #fafafe, #f5f3ff);
+        }
+
+        /* Veg / Non-veg dot */
+        .food-type-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            letter-spacing: .3px;
         }
 
+        .food-type-dot::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .food-type-dot.veg {
+            color: #16a34a;
+        }
+
+        .food-type-dot.veg::before {
+            background: #16a34a;
+        }
+
+        .food-type-dot.nonveg {
+            color: #dc2626;
+        }
+
+        .food-type-dot.nonveg::before {
+            background: #dc2626;
+        }
+
+        .food-type-dot.egg {
+            color: #d97706;
+        }
+
+        .food-type-dot.egg::before {
+            background: #d97706;
+        }
+
+        .item-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: #1e293b;
+            line-height: 1.3;
+            flex: 1;
+        }
+
+        .item-price {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        /* Qty controls */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1.5px solid var(--border-color);
+        }
+
+        .qty-btn {
+            background: transparent;
+            border: none;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s, color .15s;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .qty-display {
+            flex: 1;
+            min-width: 30px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: white;
+            border: none;
+            border-left: 1.5px solid var(--border-color);
+            border-right: 1.5px solid var(--border-color);
+            height: 34px;
+            line-height: 34px;
+        }
+
+        /* Qty badge */
+        .qty-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        .item-card.has-qty .qty-badge {
+            display: flex;
+        }
+
+        /* ── Grand total bar ── */
         .grand-total-bar {
-            background-color: white;
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
+            background: white;
+            padding: 18px 28px;
+            border-top: 2px solid var(--border-color);
             position: fixed;
             bottom: 0;
             right: 0;
             width: 75%;
-            /* Approximate width of col-md-9 */
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, .08);
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         @media (max-width: 768px) {
@@ -143,74 +307,62 @@
             .sidebar {
                 min-height: auto;
             }
+
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+                gap: 10px;
+            }
         }
     </style>
 </head>
 
 <body>
-
     <div class="container-fluid">
         <div class="row min-vh-100">
 
             <!-- LEFT SIDEBAR -->
-            <div class="col-md-3 sidebar">
+            <div class="col-md-3 sidebar d-none d-md-block">
                 <div class="hotel-header">
                     <i class="fas fa-building"></i>
                     <span>{{ request.user.hotelowner.hotel.name }}</span>
                 </div>
-
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="/owner/tables/">
-                            <i class="fas fa-chair"></i> Table Management
-                        </a>
+                        <a class="nav-link" href="/owner/tables/"><i class="fas fa-chair"></i> Table Management</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/menu/owner/categories/">
-                            <i class="fas fa-folder-open"></i> Category Management
-                        </a>
+                        <a class="nav-link" href="/menu/owner/categories/"><i class="fas fa-folder-open"></i> Category
+                            Management</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'owner_items' %}">
-                            <i class="fas fa-utensils"></i> Menu Items
-                        </a>
+                        <a class="nav-link" href="{% url 'owner_items' %}"><i class="fas fa-utensils"></i> Menu
+                            Items</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/orders/history/">
-                            <i class="fas fa-history"></i> Order History
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
-                            <i class="fas fa-fire-burner"></i> Kitchen Display
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/inventory/">
-                            <i class="fas fa-boxes"></i> Inventory
-                        </a>
+                        <a class="nav-link" href="/orders/history/"><i class="fas fa-history"></i> Order History</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'owner_billing' %}">
-                            <i class="fas fa-cash-register"></i> Bill / POS
-                        </a>
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank"><i
+                                class="fas fa-fire-burner"></i> Kitchen Display</a>
                     </li>
-
-
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'owner_reports' %}">
-                            <i class="fas fa-chart-line"></i> Reports
-                        </a>
+                        <a class="nav-link" href="/inventory/"><i class="fas fa-boxes"></i> Inventory</a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'owner_billing' %}"><i class="fas fa-cash-register"></i>
+                            Bill / POS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_reports' %}"><i class="fas fa-chart-line"></i>
+                            Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'draft_list' %}"><i class="fas fa-file-invoice"></i> Draft
+                            Bills</a>
+                    </li>
                     <div class="nav-divider"></div>
-
                     <li class="nav-item">
-                        <a class="nav-link logout" href="/logout/">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+                        <a class="nav-link logout" href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
                     </li>
                 </ul>
             </div>
@@ -218,8 +370,8 @@
             <!-- RIGHT CONTENT -->
             <div class="col-md-9 main-content">
 
-                <h2 class="mb-4"><i class="fas fa-cash-register text-primary me-2"></i> Update Bill / POS</h2>
-                
+                <h2 class="mb-4"><i class="fas fa-cash-register text-primary me-2"></i> Bill / POS</h2>
+
                 <form method="post" id="billingForm">
                     {% csrf_token %}
 
@@ -234,7 +386,6 @@
                                         <option value="parcel">Parcel</option>
                                     </select>
                                 </div>
-
                                 <div class="col-md-6" id="tableSelection">
                                     <label class="form-label fw-bold">Select Table:</label>
                                     <select name="table" class="form-control form-select">
@@ -247,69 +398,52 @@
                         </div>
                     </div>
 
-                    <h4 class="mb-3">Select Items</h4>
+                    <h4 class="mb-3"><i class="fas fa-th text-primary me-2"></i>Select Items</h4>
 
-                    <div class="row">
-                        {% for category in categories %}
-                        <div class="col-12 mt-2">
-                            <div class="category-header">
-                                <h5 class="m-0">{{ category.name }}</h5>
-                            </div>
-                            <div class="table-responsive bg-white rounded shadow-sm border">
-                                <table class="table table-hover mb-0 pos-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 50%;">Item</th>
-                                            <th style="width: 25%;">Price</th>
-                                            <th style="width: 25%;">Quantity</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for item in category.menuitem_set.all %}
-                                        {% if item.is_available %}
-                                        <tr>
-                                            <td>
-                                                <span class="fw-medium">{{ item.name }}</span>
-                                                <small class="text-muted d-block">
-                                                    {{ item.get_food_type_display }}
-                                                </small>
-                                            </td>
-                                            <td>₹{{ item.price }}</td>
-                                            <td>
-                                                <input type="hidden" name="items" value="{{ item.id }}" disabled>
-                                                <div class="input-group input-group-sm" style="width: 120px;">
-                                                    <button type="button" class="btn btn-outline-secondary"
-                                                        onclick="updateQty(this, -1)">
-                                                        <i class="fas fa-minus"></i>
-                                                    </button>
-                                                    <input type="number" class="form-control qty-input text-center"
-                                                        min="0" value="0" data-price="{{ item.price }}"
-                                                        onchange="updateTotal()" readonly>
-                                                    <button type="button" class="btn btn-outline-secondary"
-                                                        onclick="updateQty(this, 1)">
-                                                        <i class="fas fa-plus"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                    {% for category in categories %}
+                    <div class="mb-4">
+                        <div class="category-header">
+                            <i class="fas fa-tag"></i>
+                            <h5>{{ category.name }}</h5>
                         </div>
-                        {% endfor %}
+                        <div class="items-grid">
+                            {% for item in category.menuitem_set.all %}
+                            {% if item.is_available %}
+                            <div class="item-card" id="card-{{ item.id }}">
+                                <span class="qty-badge" id="badge-{{ item.id }}">0</span>
+                                <span class="food-type-dot {{ item.food_type }}">{{ item.get_food_type_display }}</span>
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-price">₹{{ item.price }}</div>
+                                <input type="hidden" name="items" value="{{ item.id }}" disabled
+                                    id="item-{{ item.id }}">
+                                <div class="qty-controls">
+                                    <button type="button" class="qty-btn" onclick="updateQty(this, -1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="qty-display qty-input" min="0" value="0"
+                                        data-price="{{ item.price }}" data-item-id="{{ item.id }}" readonly>
+                                    <button type="button" class="qty-btn" onclick="updateQty(this, 1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
                     </div>
+                    {% endfor %}
 
-                    <div style="margin-bottom: 150px;"></div>
+                    <div style="margin-bottom: 110px;"></div>
 
-                    <div class="grand-total-bar d-flex justify-content-between align-items-center">
+                    <div class="grand-total-bar">
                         <div>
                             <small class="text-muted text-uppercase fw-bold">Grand Total</small>
-                            <h2 class="m-0 text-primary">₹<span id="grandTotal">0.00</span></h2>
+                            <h2 class="m-0 text-primary">₹<span id="grandTotal">0.00</span>
+                                <small id="itemCount" class="text-muted fw-normal" style="font-size:0.85rem"></small>
+                            </h2>
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg px-5 shadow">
-                            <i class="fas fa-check-circle me-2"></i> Place Order
+                            <i class="fas fa-receipt me-2"></i> Place Order &amp; Print Bill
                         </button>
                     </div>
                 </form>
@@ -322,43 +456,44 @@
         function toggleTableSelection() {
             const type = document.getElementById('orderType').value;
             const tableDiv = document.getElementById('tableSelection');
-
-            if (type === 'parcel') {
-                tableDiv.style.display = 'none';
-            } else {
-                tableDiv.style.display = 'block';
-            }
+            if (tableDiv) tableDiv.style.display = type === 'parcel' ? 'none' : 'block';
         }
 
         function updateQty(btn, change) {
-            const input = btn.parentElement.querySelector('.qty-input');
+            const card = btn.closest('.item-card');
+            const input = card.querySelector('.qty-input');
             let newVal = parseInt(input.value) + change;
             if (newVal < 0) newVal = 0;
             input.value = newVal;
 
-            // Enable/disable hidden input based on quantity
-            const hiddenInput = btn.closest('td').querySelector('input[type="hidden"]');
+            const itemId = input.dataset.itemId;
+            const hiddenInput = document.getElementById('item-' + itemId);
+            const badge = document.getElementById('badge-' + itemId);
 
             if (newVal > 0) {
                 hiddenInput.disabled = false;
                 input.setAttribute('name', 'quantities');
+                card.classList.add('has-qty');
+                badge.textContent = newVal;
             } else {
                 hiddenInput.disabled = true;
                 input.removeAttribute('name');
+                card.classList.remove('has-qty');
             }
-
             updateTotal();
         }
 
         function updateTotal() {
-            let total = 0;
+            let total = 0, count = 0;
             document.querySelectorAll('.qty-input').forEach(inp => {
                 const qty = parseInt(inp.value) || 0;
                 const price = parseFloat(inp.dataset.price);
                 total += qty * price;
+                if (qty > 0) count++;
             });
-
             document.getElementById('grandTotal').innerText = total.toFixed(2);
+            const countEl = document.getElementById('itemCount');
+            countEl.textContent = count > 0 ? ' — ' + count + ' item' + (count > 1 ? 's' : '') : '';
         }
     </script>
 
