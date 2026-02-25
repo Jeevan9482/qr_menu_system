@@ -452,6 +452,87 @@
             color: var(--primary);
         }
 
+        /* Search bar */
+        .search-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 12px 0 14px;
+            margin-bottom: 4px;
+        }
+
+        .search-input-group {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 0 14px;
+            gap: 10px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .search-input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+        }
+
+        .search-input-group i {
+            color: var(--muted);
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .search-input-group input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1e293b;
+            background: transparent;
+            padding: 11px 0;
+        }
+
+        .search-input-group input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .search-clear {
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 4px;
+            border-radius: 50%;
+            display: none;
+            transition: color .2s, background .2s;
+        }
+
+        .search-clear:hover {
+            color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .no-results i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .no-results p {
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .action-bar {
                 width: 100%;
@@ -505,19 +586,29 @@
 
                 <div class="breadcrumb-bar">
                     <a href="{% url 'draft_list' %}"><i class="fas fa-file-invoice me-1"></i>Draft Bills</a>
-                    <span class="sep">â€º</span>
+                    <span class="sep">&rsaquo;</span>
                     <span class="current">Slot #{{ slot }}</span>
                 </div>
 
                 <div class="slot-pill">
                     {% if draft_order %}<span class="dot active"></span>{% else %}<span class="dot"></span>{% endif %}
-                    Draft Slot #{{ slot }} — {% if draft_order %}{{ draft_order.order_id }}{% else %}Empty{% endif %}
+                    Draft Slot #{{ slot }} &mdash; {% if draft_order %}{{ draft_order.order_id }}{% else %}Empty{% endif %}
                 </div>
 
                 <div class="row">
                     <!-- MENU CARDS -->
                     <div class="col-md-8">
                         <h5 class="fw-bold mb-3"><i class="fas fa-th text-primary me-2"></i>Select Items to Add</h5>
+
+                        <!-- Search Bar -->
+                        <div class="search-wrapper">
+                            <div class="search-input-group">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="itemSearchInput" placeholder="Search menu items..."
+                                    oninput="filterItems(this.value)" autocomplete="off">
+                                <i class="fas fa-times search-clear" id="searchClear" onclick="clearSearch()"></i>
+                            </div>
+                        </div>
 
                         {% if not draft_order %}
                         <div class="card shadow-sm mb-4">
@@ -575,6 +666,12 @@
                         </div>
                         {% endfor %}
 
+                        <!-- No results state -->
+                        <div class="no-results" id="noResults">
+                            <i class="fas fa-search-minus"></i>
+                            <p>No items found for "<span id="noResultsQuery"></span>"</p>
+                        </div>
+
                         <div style="height: 100px;"></div>
                     </div>
 
@@ -589,9 +686,7 @@
                             {% if draft_order %}
                             <div class="op-meta">
                                 <span class="me-3"><i class="fas fa-tag me-1"></i>{{ draft_order.get_order_type_display }}</span>
-
                                 {% if draft_order.table %}<span><i class="fas fa-chair me-1"></i>Table {{ draft_order.table.table_number }}</span>{% endif %}
-
                             </div>
                             {% endif %}
 
@@ -600,7 +695,7 @@
                                 {% for oi in draft_order.items.all %}
                                 <div class="op-line">
                                     <div class="name">{{ oi.menu_item.name }}</div>
-                                    <span class="qty-tag">Ã—{{ oi.quantity }}</span>
+                                    <span class="qty-tag">&times;{{ oi.quantity }}</span>
                                     <span class="sub">₹{{ oi.get_subtotal }}</span>
                                 </div>
                                 {% empty %}
@@ -663,6 +758,46 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        /* ── Search ── */
+        function filterItems(query) {
+            const q = query.trim().toLowerCase();
+            const clearBtn = document.getElementById('searchClear');
+            const noResults = document.getElementById('noResults');
+            const noResultsQuery = document.getElementById('noResultsQuery');
+
+            clearBtn.style.display = q ? 'block' : 'none';
+
+            let totalVisible = 0;
+
+            document.querySelectorAll('.mb-4').forEach(section => {
+                // Each section = category block (cat-header + items-grid)
+                const grid = section.querySelector('.items-grid');
+                if (!grid) return;
+
+                let sectionVisible = 0;
+                grid.querySelectorAll('.item-card').forEach(card => {
+                    const name = card.querySelector('.item-name');
+                    if (!name) return;
+                    const match = !q || name.textContent.toLowerCase().includes(q);
+                    card.style.display = match ? '' : 'none';
+                    if (match) sectionVisible++;
+                });
+
+                section.style.display = sectionVisible > 0 ? '' : 'none';
+                totalVisible += sectionVisible;
+            });
+
+            noResults.style.display = totalVisible === 0 && q ? 'block' : 'none';
+            noResultsQuery.textContent = query;
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('itemSearchInput');
+            input.value = '';
+            filterItems('');
+            input.focus();
+        }
+
         function toggleTable() {
             const t = document.getElementById('orderType').value;
             const d = document.getElementById('tableSelection');
