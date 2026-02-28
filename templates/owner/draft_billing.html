@@ -188,34 +188,83 @@
         }
 
         .item-card {
-            background: white;
-            border: 2px solid var(--border);
+            background: #ffffff;
             border-radius: 12px;
-            padding: 16px 14px 14px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            transition: border-color .2s, box-shadow .2s, transform .15s;
             position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            height: 220px;
+            border: 2px solid transparent;
         }
 
         .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border-color: var(--primary);
-            box-shadow: 0 4px 16px rgba(99, 102, 241, .12);
-            transform: translateY(-2px);
         }
 
         .item-card.has-qty {
             border-color: var(--primary);
-            background: linear-gradient(135deg, #fafafe, #f5f3ff);
+        }
+
+        .item-bg-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* Fallback gradient if no image */
+        .item-bg-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+            z-index: 1;
+        }
+
+        .item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0.85) 100%);
+            z-index: 2;
+        }
+
+        .item-content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            padding: 16px;
         }
 
         .food-dot {
-            display: inline-flex;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 4;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.72rem;
-            font-weight: 600;
+            gap: 4px;
             text-transform: uppercase;
         }
 
@@ -243,27 +292,39 @@
             background: #dc2626;
         }
 
+        .food-dot.egg {
+            color: #d97706;
+        }
+
+        .food-dot.egg::before {
+            background: #d97706;
+        }
+
         .item-name {
             font-weight: 700;
-            font-size: 0.92rem;
-            color: #1e293b;
-            line-height: 1.3;
-            flex: 1;
+            font-size: 1.05rem;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .item-price {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: var(--primary);
+            color: #4ade80;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .qty-controls {
             display: flex;
             align-items: center;
-            background: #f1f5f9;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             overflow: hidden;
-            border: 1.5px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: 100%;
         }
 
         .qty-btn {
@@ -590,9 +651,32 @@
                     <span class="current">Slot #{{ slot }}</span>
                 </div>
 
+                <!-- Django Messages -->
+                {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="slot-pill">
-                    {% if draft_order %}<span class="dot active"></span>{% else %}<span class="dot"></span>{% endif %}
-                    Draft Slot #{{ slot }} &mdash; {% if draft_order %}{{ draft_order.order_id }}{% else %}Empty{% endif %}
+                    {% if draft_order %}
+                    <span class="dot active"></span>
+                    {% else %}
+                    <span class="dot"></span>
+                    {% endif %}
+                    Draft Slot #{{ slot }} &mdash;
+                    {% if draft_order %}
+                    {{ draft_order.order_id }}
+                    {% else %}
+                    Empty
+                    {% endif %}
                 </div>
 
                 <div class="row">
@@ -646,18 +730,28 @@
                                 <div class="item-card" id="card-{{ item.id }}">
                                     <span class="qty-badge" id="badge-{{ item.id }}">0</span>
                                     <span class="food-dot {{ item.food_type }}">{{ item.get_food_type_display }}</span>
-                                    <div class="item-name">{{ item.name }}</div>
-                                    <div class="item-price">₹{{ item.price }}</div>
-                                    <!-- Always submit item id and qty (view filters qty=0) -->
-                                    <input type="hidden" name="items" value="{{ item.id }}" form="draftForm">
-                                    <div class="qty-controls">
-                                        <button type="button" class="qty-btn" onclick="changeQty(this,-1)"><i
-                                                class="fas fa-minus"></i></button>
-                                        <input type="number" class="qty-val" name="quantities" form="draftForm" min="0"
-                                            value="0" data-price="{{ item.price }}" data-item-id="{{ item.id }}"
-                                            readonly>
-                                        <button type="button" class="qty-btn" onclick="changeQty(this,1)"><i
-                                                class="fas fa-plus"></i></button>
+
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-bg-img">
+                                    {% else %}
+                                    <div class="item-bg-fallback"></div>
+                                    {% endif %}
+                                    <div class="item-overlay"></div>
+
+                                    <div class="item-content">
+                                        <div class="item-name">{{ item.name }}</div>
+                                        <div class="item-price">₹{{ item.price }}</div>
+                                        <!-- Always submit item id and qty (view filters qty=0) -->
+                                        <input type="hidden" name="items" value="{{ item.id }}" form="draftForm">
+                                        <div class="qty-controls">
+                                            <button type="button" class="qty-btn" onclick="changeQty(this,-1)"><i
+                                                    class="fas fa-minus"></i></button>
+                                            <input type="number" class="qty-val" name="quantities" form="draftForm"
+                                                min="0" value="0" data-price="{{ item.price }}"
+                                                data-item-id="{{ item.id }}" readonly>
+                                            <button type="button" class="qty-btn" onclick="changeQty(this,1)"><i
+                                                    class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -685,8 +779,16 @@
 
                             {% if draft_order %}
                             <div class="op-meta">
-                                <span class="me-3"><i class="fas fa-tag me-1"></i>{{ draft_order.get_order_type_display }}</span>
-                                {% if draft_order.table %}<span><i class="fas fa-chair me-1"></i>Table {{ draft_order.table.table_number }}</span>{% endif %}
+                                <span class="me-3">
+                                    <i class="fas fa-tag me-1"></i>
+                                    {{ draft_order.get_order_type_display }}
+                                </span>
+                                {% if draft_order.table %}
+                                <span>
+                                    <i class="fas fa-chair me-1"></i>
+                                    Table {{ draft_order.table.table_number }}
+                                </span>
+                                {% endif %}
                             </div>
                             {% endif %}
 
@@ -745,6 +847,13 @@
         </div>
         <div class="d-flex gap-2 align-items-center">
             {% if draft_order %}
+            {% if not draft_order.is_sent_to_kds %}
+            <button type="button" class="btn btn-info btn-lg px-4 shadow text-white" onclick="doSubmit('send_kds')"><i
+                    class="fas fa-fire-burner me-2"></i>Send to KDS</button>
+            {% else %}
+            <button type="button" class="btn btn-outline-info btn-lg px-4 shadow" disabled><i
+                    class="fas fa-check me-2"></i>Sent to KDS</button>
+            {% endif %}
             <button type="button" class="btn btn-primary btn-lg px-4 shadow" onclick="doSubmit('save')"><i
                     class="fas fa-floppy-disk me-2"></i>Add &amp; Save Draft</button>
             <button type="button" class="btn btn-success btn-lg px-4 shadow" onclick="doSubmit('close')"><i

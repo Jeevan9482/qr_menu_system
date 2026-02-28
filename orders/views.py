@@ -224,6 +224,7 @@ def kitchen_display(request):
     orders = (
         Order.objects
         .filter(hotel=hotel, is_completed=False)
+        .exclude(draft_slot__isnull=False, is_sent_to_kds=False)
         .prefetch_related('items__menu_item')
         .order_by('-created_at')
     )
@@ -238,6 +239,7 @@ def owner_billing(request):
     hotel = request.user.hotelowner.hotel
     
     if request.method == 'POST':
+        action = request.POST.get('action', 'place_order')
         order_type = request.POST.get('order_type')
         item_ids = request.POST.getlist('items')
         quantities = request.POST.getlist('quantities')
@@ -245,14 +247,40 @@ def owner_billing(request):
         if not item_ids:
             return redirect('owner_billing')
 
-        # Create Order
-        order = Order(
-            hotel=hotel,
-            order_id=f"POS{uuid.uuid4().hex[:6].upper()}",
-            order_type=order_type,
-            total_amount=0,
-            is_new=True
-        )
+        if action == 'save_draft':
+            # Find an available draft slot (1-10)
+            available_slot = None
+            for slot in range(1, 11):
+                if not Order.objects.filter(hotel=hotel, draft_slot=slot, is_completed=False).exists():
+                    available_slot = slot
+                    break
+            
+            if not available_slot:
+                from django.contrib import messages
+                messages.error(request, 'All 10 draft slots are currently full. Please complete or clear a draft first.')
+                return redirect('owner_billing')
+
+            order = Order(
+                hotel=hotel,
+                order_id=f"DFT{available_slot:02d}{uuid.uuid4().hex[:4].upper()}",
+                order_type=order_type,
+                total_amount=0,
+                is_new=True,
+                is_completed=False,
+                draft_slot=available_slot
+            )
+        else:
+            # Normal 'place_order' process
+            order = Order(
+                hotel=hotel,
+                order_id=f"POS{uuid.uuid4().hex[:6].upper()}",
+                order_type=order_type,
+                total_amount=0,
+                is_new=True,
+                is_completed=True # Immediately flag complete for normal POS orders so they skip KDS/Drafts if desired, or let standard POS logic play out
+            )
+            # Actually standard POS is marked for KDS, so we defer to the original behavior of is_completed=False initially unless this system normally closes them later
+            order.is_completed = False
 
         if order_type == 'dine_in':
             table_id = request.POST.get('table')
@@ -277,12 +305,21 @@ def owner_billing(request):
                 total += menu_item.price * qty
 
         order.total_amount = total
-        order.save()
         
-        # Deduct Inventory
-        deduct_inventory(order)
-
-        return redirect('bill_receipt', order_id=order.order_id)
+        if action == 'save_draft':
+            order.mark_for_kitchen() # If you want drafts to show in kitchen, or ommit it. The existing draft system marks them based on earlier logic.
+            order.save()
+            deduct_inventory(order)
+            from django.contrib import messages
+            messages.success(request, f'Order successfully saved to Draft Slot {available_slot}.')
+            return redirect('draft_list')
+            
+        else:
+            # Normal Place Order Path
+            order.save()
+            # Deduct Inventory
+            deduct_inventory(order)
+            return redirect('bill_receipt', order_id=order.order_id)
 
     # GET Request
     categories = Category.objects.filter(hotel=hotel, is_active=True).prefetch_related('menuitem_set')
@@ -580,11 +617,21 @@ def draft_billing(request, slot):
                     total_added += menu_item.price * qty
 
         draft_order.total_amount += total_added
-        draft_order.mark_for_kitchen()   # show in KDS
+        
+        if action == 'send_kds':
+            draft_order.is_sent_to_kds = True
+            draft_order.mark_for_kitchen()   # show and highlight in KDS
+        elif draft_order.is_sent_to_kds:
+            draft_order.mark_for_kitchen()   # re-highlight if already sent
+            
         draft_order.save()
 
         deduct_inventory(draft_order)
 
+        if action == 'send_kds':
+            from django.contrib import messages
+            messages.success(request, f'Draft #{slot} has been placed to the Kitchen Display System.')
+            
         return redirect('draft_billing', slot=slot)
 
     # ── GET ──

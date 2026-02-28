@@ -17,6 +17,9 @@ def customer_menu(request, hotel_id, table_id):
     hotel = get_object_or_404(Hotel, id=hotel_id, is_active=True)
     table = get_object_or_404(Table, id=table_id, hotel=hotel)
 
+    if not table.is_active:
+        return render(request, 'menu/inactive_table.html', {'hotel': hotel, 'table': table})
+
     categories = Category.objects.filter(
         hotel=hotel,
         is_active=True

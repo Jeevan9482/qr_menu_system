@@ -20,8 +20,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
     draft_slot = models.IntegerField(null=True, blank=True)  # 1-10 = draft slot; null = regular order
+    is_sent_to_kds = models.BooleanField(default=False)
 
-   
     is_new = models.BooleanField(default=True)
     highlight_until = models.DateTimeField(null=True, blank=True)
 

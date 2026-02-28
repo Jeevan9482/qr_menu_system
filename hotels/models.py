@@ -29,6 +29,7 @@ class Table(models.Model):
         blank=True,
         null=True
     )
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('hotel', 'table_number')

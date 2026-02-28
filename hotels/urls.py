@@ -5,4 +5,5 @@ urlpatterns = [
     path('owner/tables/', views.owner_tables, name='owner_tables'),
     path('owner/tables/add/', views.add_table, name='add_table'),
     path('owner/tables/delete/<int:table_id>/', views.delete_table, name='delete_table'),
+    path('owner/tables/toggle/<int:table_id>/', views.toggle_table_status, name='toggle_table_status'),
 ]

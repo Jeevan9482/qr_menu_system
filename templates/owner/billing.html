@@ -131,21 +131,73 @@
         /* ── Item Cards ── */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            gap: 14px;
-            margin-bottom: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
         .item-card {
-            background: white;
-            border: 2px solid var(--border-color);
+            background: #ffffff;
             border-radius: 12px;
-            padding: 16px 14px 14px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            transition: border-color .2s, box-shadow .2s, transform .15s;
             position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            height: 220px;
+            border: 2px solid transparent;
+        }
+
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-color);
+        }
+
+        .item-card.has-qty {
+            border-color: var(--primary-color);
+        }
+
+        .item-bg-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* Fallback gradient if no image */
+        .item-bg-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+            z-index: 1;
+        }
+
+        .item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0.85) 100%);
+            z-index: 2;
+        }
+
+        .item-content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            padding: 16px;
         }
 
         .item-card:hover {
@@ -159,15 +211,20 @@
             background: linear-gradient(135deg, #fafafe, #f5f3ff);
         }
 
-        /* Veg / Non-veg dot */
-        .food-type-dot {
-            display: inline-flex;
+        .food-type-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 4;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .3px;
+            gap: 4px;
         }
 
         .food-type-dot::before {
@@ -204,33 +261,38 @@
 
         .item-name {
             font-weight: 700;
-            font-size: 0.92rem;
-            color: #1e293b;
-            line-height: 1.3;
-            flex: 1;
+            font-size: 1.05rem;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .item-price {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: var(--primary-color);
+            color: #4ade80;
+            /* bright green for exact contrast */
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
-        /* Qty controls */
+        /* Qty controls overlay */
         .qty-controls {
             display: flex;
             align-items: center;
-            background: #f1f5f9;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             overflow: hidden;
-            border: 1.5px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: 100%;
         }
 
         .qty-btn {
             background: transparent;
             border: none;
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             flex-shrink: 0;
             font-size: 0.85rem;
             cursor: pointer;
@@ -257,11 +319,10 @@
             border: none;
             border-left: 1.5px solid var(--border-color);
             border-right: 1.5px solid var(--border-color);
-            height: 34px;
-            line-height: 34px;
+            height: 32px;
+            line-height: 32px;
         }
 
-        /* Qty badge */
         .qty-badge {
             position: absolute;
             top: -8px;
@@ -283,20 +344,61 @@
             display: flex;
         }
 
-        /* ── Grand total bar ── */
-        .grand-total-bar {
+        .cart-item {
             background: white;
-            padding: 18px 28px;
-            border-top: 2px solid var(--border-color);
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 75%;
-            box-shadow: 0 -6px 20px rgba(0, 0, 0, .08);
-            z-index: 1000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cart-item-header {
+            display: flex;
             justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .cart-item-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+            line-height: 1.2;
+            padding-right: 8px;
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-total {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .btn-remove-item {
+            background: transparent;
+            color: #ef4444;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-remove-item:hover {
+            color: #dc2626;
         }
 
         /* Search bar */
@@ -398,11 +500,11 @@
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row min-vh-100">
+    <div class="container-fluid p-0">
+        <div class="row min-vh-100 g-0">
 
             <!-- LEFT SIDEBAR -->
-            <div class="col-md-3 sidebar d-none d-md-block">
+            <div class="col-lg-2 col-md-3 sidebar d-none d-md-block">
                 <div class="hotel-header">
                     <i class="fas fa-building"></i>
                     <span>{{ request.user.hotelowner.hotel.name }}</span>
@@ -448,103 +550,182 @@
                 </ul>
             </div>
 
-            <!-- RIGHT CONTENT -->
-            <div class="col-md-9 main-content">
+            <!-- CENTER CONTENT (Menu Items) -->
+            <div class="col-lg-7 col-md-5 main-content border-end">
 
-                <h2 class="mb-4"><i class="fas fa-cash-register text-primary me-2"></i> Bill / POS</h2>
+                <h2 class="mb-4 d-flex align-items-center"><i class="fas fa-utensils text-primary me-3"></i> Menu Items
+                </h2>
 
-                <form method="post" id="billingForm">
-                    {% csrf_token %}
+                <!-- Django Messages -->
+                {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
 
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Order Type:</label>
-                                    <select name="order_type" id="orderType" class="form-control form-select"
-                                        onchange="toggleTableSelection()">
-                                        <option value="dine_in">Dine In</option>
-                                        <option value="parcel">Parcel</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6" id="tableSelection">
-                                    <label class="form-label fw-bold">Select Table:</label>
-                                    <select name="table" class="form-control form-select">
-                                        {% for table in tables %}
-                                        <option value="{{ table.id }}">Table {{ table.table_number }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                <!-- Search Bar -->
+                <div class="search-wrapper">
+                    <div class="search-input-group">
+                        <i class="fas fa-search si"></i>
+                        <input type="text" id="itemSearchInput" placeholder="Search menu items..."
+                            oninput="filterItems(this.value)" autocomplete="off">
+                        <i class="fas fa-times search-clear" id="searchClear" onclick="clearSearch()"></i>
+                    </div>
+                </div>
+
+                {% for category in categories %}
+                <div class="mb-4">
+                    <div class="category-header">
+                        <i class="fas fa-tag"></i>
+                        <h5>{{ category.name }}</h5>
+                    </div>
+                    <div class="items-grid">
+                        {% for item in category.menuitem_set.all %}
+                        {% if item.is_available %}
+                        <div class="item-card" id="card-{{ item.id }}">
+                            <span class="qty-badge" id="badge-{{ item.id }}">0</span>
+
+                            <div class="food-type-badge text-uppercase {{ item.food_type }}">
+                                <span class="food-type-dot {{ item.food_type }}" style="margin:0;"></span>
+                                <span>{{ item.get_food_type_display }}</span>
                             </div>
-                        </div>
-                    </div>
 
-                    <h4 class="mb-3"><i class="fas fa-th text-primary me-2"></i>Select Items</h4>
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-bg-img">
+                            {% else %}
+                            <div class="item-bg-fallback"></div>
+                            {% endif %}
+                            <div class="item-overlay"></div>
 
-                    <!-- Search Bar -->
-                    <div class="search-wrapper">
-                        <div class="search-input-group">
-                            <i class="fas fa-search si"></i>
-                            <input type="text" id="itemSearchInput" placeholder="Search menu items..."
-                                oninput="filterItems(this.value)" autocomplete="off">
-                            <i class="fas fa-times search-clear" id="searchClear" onclick="clearSearch()"></i>
-                        </div>
-                    </div>
-
-                    {% for category in categories %}
-                    <div class="mb-4">
-                        <div class="category-header">
-                            <i class="fas fa-tag"></i>
-                            <h5>{{ category.name }}</h5>
-                        </div>
-                        <div class="items-grid">
-                            {% for item in category.menuitem_set.all %}
-                            {% if item.is_available %}
-                            <div class="item-card" id="card-{{ item.id }}">
-                                <span class="qty-badge" id="badge-{{ item.id }}">0</span>
-                                <span class="food-type-dot {{ item.food_type }}">{{ item.get_food_type_display }}</span>
+                            <div class="item-content">
                                 <div class="item-name">{{ item.name }}</div>
                                 <div class="item-price">₹{{ item.price }}</div>
                                 <input type="hidden" name="items" value="{{ item.id }}" disabled
                                     id="item-{{ item.id }}">
-                                <div class="qty-controls">
-                                    <button type="button" class="qty-btn" onclick="updateQty(this, -1)">
+
+                                <div class="qty-controls mt-auto">
+                                    <button type="button" class="qty-btn text-danger fw-bold"
+                                        onclick="updateQty(this, -1)">
                                         <i class="fas fa-minus"></i>
                                     </button>
-                                    <input type="number" class="qty-display qty-input" min="0" value="0"
-                                        data-price="{{ item.price }}" data-item-id="{{ item.id }}" readonly>
-                                    <button type="button" class="qty-btn" onclick="updateQty(this, 1)">
+                                    <input type="number" class="qty-display qty-input fw-bold" min="0" value="0"
+                                        data-price="{{ item.price }}" data-item-id="{{ item.id }}" readonly
+                                        style="font-size: 1.1rem;">
+                                    <button type="button" class="qty-btn text-success fw-bold"
+                                        onclick="updateQty(this, 1)">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
                             </div>
-                            {% endif %}
-                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- No results state -->
+                <div class="no-results" id="noResults">
+                    <i class="fas fa-search-minus"></i>
+                    <p>No items found for "<span id="noResultsQuery"></span>"</p>
+                </div>
+
+                <div style="margin-bottom: 20px;"></div>
+            </div>
+
+            <!-- RIGHT CONTENT (Cart & POS) -->
+            <div class="col-lg-3 col-md-4 d-flex flex-column"
+                style="height: 100vh; position: sticky; top: 0; background-color: white; z-index: 100;">
+                <form method="post" id="billingForm" class="d-flex flex-column h-100 m-0">
+                    {% csrf_token %}
+
+                    <!-- Header & Settings -->
+                    <div class="p-3 border-bottom bg-white shadow-sm" style="z-index: 2;">
+                        <h4 class="mb-3 fw-bold d-flex align-items-center"><i
+                                class="fas fa-shopping-cart text-primary me-2"></i>Current Order</h4>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Order Type</label>
+                            <select name="order_type" id="orderType" class="form-select form-select-sm"
+                                onchange="toggleTableSelection()">
+                                <option value="dine_in">Dine In</option>
+                                <option value="parcel">Parcel</option>
+                            </select>
+                        </div>
+
+                        <div id="tableSelection">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1">Select Table</label>
+                            <select name="table" class="form-select form-select-sm">
+                                {% for table in tables %}
+                                <option value="{{ table.id }}">Table {{ table.table_number }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
-                    {% endfor %}
 
-                    <!-- No results state -->
-                    <div class="no-results" id="noResults">
-                        <i class="fas fa-search-minus"></i>
-                        <p>No items found for "<span id="noResultsQuery"></span>"</p>
+                    <!-- Cart Items Container -->
+                    <div class="flex-grow-1 overflow-auto p-3" id="cart-items-container"
+                        style="background-color: #f8fafc;">
+                        <div class="text-center text-muted mt-5 empty-cart-msg" id="emptyCartMsg">
+                            <i class="fas fa-shopping-basket fa-3x mb-3" style="opacity: 0.4;"></i>
+                            <p>Select items from the menu to start building the order.</p>
+                        </div>
                     </div>
 
-                    <div style="margin-bottom: 110px;"></div>
+                    <!-- Hidden Inputs Container (for form submission) -->
+                    <div id="hidden-inputs-container" style="display: none;"></div>
 
-                    <div class="grand-total-bar">
-                        <div>
-                            <small class="text-muted text-uppercase fw-bold">Grand Total</small>
-                            <h2 class="m-0 text-primary">₹<span id="grandTotal">0.00</span>
-                                <small id="itemCount" class="text-muted fw-normal" style="font-size:0.85rem"></small>
-                            </h2>
+                    <!-- Grand Total & Place Order -->
+                    <div class="p-3 border-top bg-white shadow" style="z-index: 2;">
+                        {% if messages %}
+                        <div class="row">
+                            <div class="col-12">
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm"
+                                    role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow">
-                            <i class="fas fa-receipt me-2"></i> Place Order &amp; Print Bill
-                        </button>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted fw-bold">Items (<span id="itemCount">0</span>)</span>
+                            <span class="text-muted fw-bold">Total</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <h3 class="m-0 text-primary fw-bold" style="font-size: 1.8rem;">₹<span
+                                    id="grandTotal">0.00</span></h3>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="submit" name="action" value="save_draft"
+                                    class="btn btn-warning btn-lg w-100 shadow-sm fw-bold text-dark" id="saveDraftBtn"
+                                    disabled>
+                                    <i class="fas fa-save me-1"></i> Save Draft
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" name="action" value="place_order"
+                                    class="btn btn-primary btn-lg w-100 shadow-sm fw-bold" id="placeOrderBtn" disabled>
+                                    <i class="fas fa-check-circle me-1"></i> Place Order
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 
@@ -595,6 +776,9 @@
             if (tableDiv) tableDiv.style.display = type === 'parcel' ? 'none' : 'block';
         }
 
+        // Stores all cart items
+        let cartItems = {};
+
         function updateQty(btn, change) {
             const card = btn.closest('.item-card');
             const input = card.querySelector('.qty-input');
@@ -603,33 +787,140 @@
             input.value = newVal;
 
             const itemId = input.dataset.itemId;
-            const hiddenInput = document.getElementById('item-' + itemId);
+            const price = parseFloat(input.dataset.price);
+            const itemName = card.querySelector('.item-name').textContent;
+
             const badge = document.getElementById('badge-' + itemId);
 
             if (newVal > 0) {
-                hiddenInput.disabled = false;
-                input.setAttribute('name', 'quantities');
                 card.classList.add('has-qty');
                 badge.textContent = newVal;
+
+                // Add/update to cart object
+                cartItems[itemId] = {
+                    id: itemId,
+                    name: itemName,
+                    price: price,
+                    qty: newVal
+                };
             } else {
-                hiddenInput.disabled = true;
-                input.removeAttribute('name');
                 card.classList.remove('has-qty');
+                delete cartItems[itemId];
             }
+
+            renderCart();
             updateTotal();
+        }
+
+        function setItemQty(itemId, newQty) {
+            if (newQty < 0) newQty = 0;
+
+            // Sync the grid card
+            const input = document.querySelector(`.qty-input[data-item-id="${itemId}"]`);
+            if (input) {
+                input.value = newQty;
+
+                const card = input.closest('.item-card');
+                const badge = document.getElementById('badge-' + itemId);
+
+                if (newQty > 0) {
+                    card.classList.add('has-qty');
+                    badge.textContent = newQty;
+                    cartItems[itemId].qty = newQty;
+                } else {
+                    card.classList.remove('has-qty');
+                    delete cartItems[itemId];
+                }
+            }
+
+            renderCart();
+            updateTotal();
+        }
+
+        function removeItem(itemId) {
+            setItemQty(itemId, 0);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const hiddenContainer = document.getElementById('hidden-inputs-container');
+            container.innerHTML = '';
+            hiddenContainer.innerHTML = ''; // Clear hidden inputs
+
+            const items = Object.values(cartItems);
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted mt-5 empty-cart-msg" id="emptyCartMsg">
+                        <i class="fas fa-shopping-basket fa-3x mb-3" style="opacity: 0.4;"></i>
+                        <p>Select items from the menu to start building the order.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const total = (item.qty * item.price).toFixed(2);
+
+                // Render visible cart item
+                const div = document.createElement('div');
+                div.className = 'cart-item shadow-sm';
+                div.innerHTML = `
+                    <div class="cart-item-header">
+                        <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-price">₹${item.price}</div>
+                    </div>
+                    <div class="cart-item-actions mt-2">
+                        <div class="qty-controls" style="margin:0;">
+                            <button type="button" class="qty-btn" onclick="setItemQty(${item.id}, ${item.qty - 1})"><i class="fas fa-minus"></i></button>
+                            <div class="qty-display">${item.qty}</div>
+                            <button type="button" class="qty-btn" onclick="setItemQty(${item.id}, ${item.qty + 1})"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="cart-item-total">₹${total}</span>
+                            <button type="button" class="btn-remove-item ms-2" onclick="removeItem(${item.id})" title="Remove">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+
+                // Render hidden inputs for form submission
+                // Django expects multiple values for 'items' and 'quantities'
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'items';
+                idInput.value = item.id;
+
+                const qtyInput = document.createElement('input');
+                qtyInput.type = 'hidden';
+                qtyInput.name = 'quantities';
+                qtyInput.value = item.qty;
+
+                hiddenContainer.appendChild(idInput);
+                hiddenContainer.appendChild(qtyInput);
+            });
+
+            // Auto scroll to bottom of cart when new item added
+            container.scrollTop = container.scrollHeight;
         }
 
         function updateTotal() {
             let total = 0, count = 0;
-            document.querySelectorAll('.qty-input').forEach(inp => {
-                const qty = parseInt(inp.value) || 0;
-                const price = parseFloat(inp.dataset.price);
-                total += qty * price;
-                if (qty > 0) count++;
+
+            Object.values(cartItems).forEach(item => {
+                total += item.qty * item.price;
+                count++; // Count unique items
             });
+
             document.getElementById('grandTotal').innerText = total.toFixed(2);
-            const countEl = document.getElementById('itemCount');
-            countEl.textContent = count > 0 ? ' — ' + count + ' item' + (count > 1 ? 's' : '') : '';
+            document.getElementById('itemCount').innerText = count;
+
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            const saveDraftBtn = document.getElementById('saveDraftBtn');
+            placeOrderBtn.disabled = count === 0;
+            saveDraftBtn.disabled = count === 0;
         }
     </script>
 

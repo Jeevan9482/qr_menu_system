@@ -61,6 +61,8 @@
 #     return redirect('owner_tables')
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+import json
 from .models import Table
 import qrcode
 from io import BytesIO
@@ -111,6 +113,22 @@ def delete_table(request, table_id):
 
     table.delete()
     return redirect('owner_tables')
+
+
+@login_required
+def toggle_table_status(request, table_id):
+    if request.method == 'POST':
+        hotel = request.user.hotelowner.hotel
+        table = get_object_or_404(Table, id=table_id, hotel=hotel)
+        try:
+            data = json.loads(request.body)
+            is_active = data.get('is_active', True)
+            table.is_active = is_active
+            table.save()
+            return JsonResponse({'success': True, 'is_active': table.is_active})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
 # ====================================

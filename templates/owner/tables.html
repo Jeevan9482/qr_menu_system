@@ -298,6 +298,18 @@
             opacity: .4;
         }
 
+        /* ── Toggle Switch ── */
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+            cursor: pointer;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 min-height: auto;
@@ -421,9 +433,24 @@
                                 {% for table in tables %}
                                 <tr>
                                     <td>
-                                        <div class="table-number-label">
-                                            <div class="icon"><i class="fas fa-chair"></i></div>
-                                            Table {{ table.table_number }}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="table-number-label">
+                                                <div class="icon"><i class="fas fa-chair"></i></div>
+                                                Table {{ table.table_number }}
+                                            </div>
+                                            <div class="form-check form-switch ms-3">
+                                                {% if table.is_active %}
+                                                <input class="form-check-input toggle-status" type="checkbox"
+                                                    role="switch" id="toggle-{{ table.id }}"
+                                                    data-table-id="{{ table.id }}" checked>
+                                                {% else %}
+                                                <input class="form-check-input toggle-status" type="checkbox"
+                                                    role="switch" id="toggle-{{ table.id }}"
+                                                    data-table-id="{{ table.id }}">
+                                                {% endif %}
+                                                <label class="form-check-label visually-hidden"
+                                                    for="toggle-{{ table.id }}">Active</label>
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
@@ -470,6 +497,38 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggles = document.querySelectorAll('.toggle-status');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('change', function () {
+                    const tableId = this.dataset.tableId;
+                    const isActive = this.checked;
+
+                    fetch(`/owner/tables/toggle/${tableId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                        body: JSON.stringify({ is_active: isActive })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert('Failed to update table status: ' + (data.error || 'Unknown error'));
+                                this.checked = !isActive; // Revert on failure
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while updating the table status.');
+                            this.checked = !isActive; // Revert on failure
+                        });
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
