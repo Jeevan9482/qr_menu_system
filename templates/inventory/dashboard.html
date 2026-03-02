@@ -1,138 +1,505 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Inventory Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventory Dashboard — Owner Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --secondary-color: #64748b;
+            --dark-bg: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f9fafb;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
         }
 
-        /* 🔝 Top Bar */
-        .top-bar {
+        /* ── Sidebar ── */
+        .sidebar {
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #0f172a 100%);
+            height: 100vh;
+            overflow-y: auto;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, .1);
+        }
+
+        .hotel-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, .1);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            gap: 12px;
         }
 
-        .top-bar h2 {
-            margin: 0;
+        .hotel-header i {
+            font-size: 1.5rem;
         }
 
-        .actions {
+        .nav {
+            gap: 8px;
+        }
+
+        .nav-item {
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            padding: 12px 16px !important;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all .3s ease;
             display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .btn {
-            padding: 8px 14px;
-            background: #10b981;
+        .nav-link:hover {
+            background: rgba(99, 102, 241, .2);
+            color: white !important;
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white !important;
+        }
+
+        .nav-divider {
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            margin: 20px 0;
+        }
+
+        .nav-link.logout {
+            color: #fca5a5 !important;
+            margin-top: 20px;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(239, 68, 68, .2);
+            color: #fecaca !important;
+        }
+
+        /* ── Main content ── */
+        .main-content {
+            padding: 30px;
+        }
+
+        /* Premium Card */
+        .card-custom {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-bottom: 24px;
+            padding: 24px;
+        }
+
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .btn-custom-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #4f46e5 100%);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn.secondary {
-            background: #2563eb;
-        }
-
-        .btn.back {
-            background: #374151;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-
-        th {
-            background: #111827;
+        .btn-custom-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
             color: white;
         }
 
-        .low {
-            background: #fee2e2;
-            color: #991b1b;
-            font-weight: bold;
+        .btn-custom-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        input[type="number"] {
-            width: 80px;
-            padding: 4px;
+        .btn-custom-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Alerts */
+        .alert-low-stock {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .alert-low-stock i {
+            color: #ef4444;
+            font-size: 1.5rem;
+            margin-top: 2px;
+        }
+
+        /* Table Design */
+        .table-custom {
+            width: 100%;
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-custom th {
+            background: #f8fafc;
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stock-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .stock-input {
+            width: 90px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-add-stock {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-add-stock:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .card-header-flex {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .table-responsive {
+                border: 0;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<!-- 🔝 HEADER BAR -->
-<div class="top-bar">
-    <h2>📦 Inventory Dashboard</h2>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
 
-    <div class="actions">
-        <!-- ➕ ADD ITEM -->
-        <a href="{% url 'add_inventory_item' %}" class="btn secondary">
-            ➕ Add Item
-        </a>
+            <!-- SIDEBAR -->
+            <div class="col-md-3 sidebar">
+                <div class="hotel-header">
+                    <i class="fas fa-building"></i>
+                    <span>{{ request.user.hotelowner.hotel.name }}</span>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_orders' %}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_billing' %}">
+                            <i class="fas fa-cash-register"></i> Bill / POS
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'draft_list' %}">
+                            <i class="fas fa-file-invoice"></i> Draft Bills
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_reports' %}">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/owner/tables/">
+                            <i class="fas fa-chair"></i> Table Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/menu/owner/categories/">
+                            <i class="fas fa-folder-open"></i> Category Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'owner_items' %}">
+                            <i class="fas fa-utensils"></i> Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders/history/">
+                            <i class="fas fa-history"></i> Order History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen_display' %}" target="_blank">
+                            <i class="fas fa-fire-burner"></i> Kitchen Display
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/inventory/">
+                            <i class="fas fa-boxes"></i> Inventory
+                            {% if global_low_stock_count > 0 %}
+                                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 0.7rem;">{{ global_low_stock_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <div class="nav-divider"></div>
+                    <li class="nav-item">
+                        <a class="nav-link logout" href="/logout/">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-        <!-- ⬅ BACK -->
-        <a href="/orders/dashboard/" class="btn back">
-            ⬅ Back to Dashboard
-        </a>
+            <!-- MAIN CONTENT -->
+            <div class="col-md-9 main-content">
+
+                <!-- GLOBAL TOP NAV -->
+                <div class="d-flex justify-content-end align-items-center mb-4 pb-2 border-bottom">
+                    <div class="dropdown">
+                        <button class="btn btn-light position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-bell fs-5 text-secondary"></i>
+                            {% if global_low_stock_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-white">
+                                {{ global_low_stock_count }}
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="notificationDropdown" style="width: 320px; border-radius: 12px; overflow: hidden;">
+                            <li class="px-3 py-2 bg-light border-bottom fw-bold text-muted" style="font-size: 0.85rem; letter-spacing: 0.5px;">NOTIFICATIONS</li>
+                            {% if global_low_stock_count > 0 %}
+                                {% for item in global_low_stock_items|slice:":5" %}
+                                <li>
+                                    <a class="dropdown-item py-3 border-bottom d-flex align-items-start gap-3 flex-wrap text-wrap text-break" href="{% url 'inventory_dashboard' %}" style="white-space: normal;">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block text-dark">{{ item.name }}</strong>
+                                            <span class="text-danger small">Stock Low: {{ item.quantity }} {{ item.get_unit_display }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                                <li><a class="dropdown-item text-center py-2 text-primary fw-bold" href="{% url 'inventory_dashboard' %}" style="font-size: 0.9rem;">View All in Inventory &rarr;</a></li>
+                            {% else %}
+                                <li><div class="dropdown-item py-4 text-center text-muted"><i class="fas fa-check-circle fs-3 text-success mb-2 d-block"></i> <span class="d-block">All systems go!</span><span class="small d-block opacity-75">No immediate alerts</span></div></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="m-0">
+                        <i class="fas fa-boxes text-primary me-2"></i> Inventory Tracking
+                    </h2>
+                    <a href="{% url 'manage_recipes' %}" class="btn-custom-secondary">
+                        <i class="fas fa-list-ol"></i> Manage Recipes
+                    </a>
+                </div>
+
+                <!-- LOW STOCK ALERT -->
+                {% if low_stock %}
+                <div class="alert-low-stock">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <h5 class="alert-heading fw-bold mb-1">Low Stock Warning</h5>
+                        <p class="mb-0">The following items have fallen below their minimum required threshold:
+                            {% for item in low_stock %}
+                            <strong>{{ item.name }}</strong>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- INVENTORY ITEMS CARD -->
+                <div class="card-custom">
+                    <div class="card-header-flex">
+                        <h4 class="m-0 fw-bold text-dark"><i class="fas fa-warehouse text-secondary me-2"></i> Raw
+                            Materials & Stock</h4>
+                        <a href="{% url 'add_inventory_item' %}" class="btn-custom-primary">
+                            <i class="fas fa-plus"></i> Add New Item
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Available Qty</th>
+                                    <th>Min. Threshold</th>
+                                    <th>Unit</th>
+                                    <th>Status</th>
+                                    <th>Quick Add Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr class="{% if item.is_low_stock %}bg-danger bg-opacity-10{% endif %}">
+                                    <td class="fw-bold">{{ item.name }}</td>
+                                    <td>
+                                        <span class="fs-5 {% if item.is_low_stock %}text-danger fw-bold{% endif %}">
+                                            {{ item.quantity }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ item.minimum_quantity }}</td>
+                                    <td><span class="badge bg-secondary">{{ item.get_unit_display }}</span></td>
+                                    <td>
+                                        {% if item.is_low_stock %}
+                                        <span class="badge-status badge-low"><i class="fas fa-exclamation-circle"></i>
+                                            Low Stock</span>
+                                        {% else %}
+                                        <span class="badge-status badge-ok"><i class="fas fa-check-circle"></i>
+                                            Healthy</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'update_stock' item.id %}"
+                                            class="stock-form">
+                                            {% csrf_token %}
+                                            <input type="number" step="0.01" min="0.01" name="quantity"
+                                                class="stock-input" placeholder="+ Qty" required>
+                                            <button type="submit" class="btn-add-stock"><i class="fas fa-plus"></i>
+                                                Add</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="fas fa-boxes fs-1 mb-3 opacity-50"></i>
+                                        <h5>No inventory items found.</h5>
+                                        <p>Start tracking your raw materials by adding an item.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- 📋 INVENTORY TABLE -->
-<table>
-    <tr>
-        <th>Item</th>
-        <th>Available</th>
-        <th>Minimum</th>
-        <th>Unit</th>
-        <th>Status</th>
-        <th>Add Stock</th>
-    </tr>
-
-    {% for item in items %}
-    <tr class="{% if item.is_low_stock %}low{% endif %}">
-        <td>{{ item.name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.minimum_quantity }}</td>
-        <td>{{ item.unit }}</td>
-        <td>
-            {% if item.is_low_stock %}
-                ⚠️ Low
-            {% else %}
-                ✅ OK
-            {% endif %}
-        </td>
-        <td>
-            <form method="post" action="{% url 'update_stock' item.id %}">
-                {% csrf_token %}
-                <input type="number" step="0.01" name="quantity" required>
-                <button class="btn">Add</button>
-            </form>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No inventory items found.</td>
-    </tr>
-    {% endfor %}
-</table>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

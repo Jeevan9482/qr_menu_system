@@ -558,6 +558,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/inventory/">
                             <i class="fas fa-boxes"></i> Inventory
+                            {% if global_low_stock_count > 0 %}
+                                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 0.7rem;">{{ global_low_stock_count }}</span>
+                            {% endif %}
                         </a>
                     </li>
                     <div class="nav-divider"></div>

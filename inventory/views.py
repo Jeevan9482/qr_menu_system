@@ -52,3 +52,51 @@ def add_inventory_item(request):
         return redirect('inventory_dashboard')
 
     return render(request, 'inventory/add_item.html')
+
+from django.contrib import messages
+from menu.models import MenuItem
+from .models import Recipe
+from django.db.models import Prefetch
+
+@login_required
+def manage_recipes(request):
+    if not hasattr(request.user, 'hotelowner'):
+        return redirect('owner_login')
+
+    hotel = request.user.hotelowner.hotel
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_recipe':
+            menu_item_id = request.POST.get('menu_item_id')
+            inventory_item_id = request.POST.get('inventory_item_id')
+            quantity = request.POST.get('quantity')
+            
+            menu_item = get_object_or_404(MenuItem, id=menu_item_id, hotel=hotel)
+            inventory_item = get_object_or_404(InventoryItem, id=inventory_item_id, hotel=hotel)
+            
+            Recipe.objects.update_or_create(
+                menu_item=menu_item,
+                inventory_item=inventory_item,
+                defaults={'quantity_required': Decimal(quantity)}
+            )
+            messages.success(request, f"Recipe configured for {menu_item.name}.")
+            return redirect('manage_recipes')
+            
+        elif action == 'delete_recipe':
+            recipe_id = request.POST.get('recipe_id')
+            recipe = get_object_or_404(Recipe, id=recipe_id, menu_item__hotel=hotel)
+            recipe.delete()
+            messages.success(request, "Ingredient removed from recipe.")
+            return redirect('manage_recipes')
+
+    menu_items = MenuItem.objects.filter(hotel=hotel).prefetch_related(
+        Prefetch('recipe_set', queryset=Recipe.objects.select_related('inventory_item'))
+    )
+    inventory_items = InventoryItem.objects.filter(hotel=hotel)
+
+    return render(request, 'inventory/manage_recipes.html', {
+        'menu_items': menu_items,
+        'inventory_items': inventory_items
+    })

@@ -66,6 +66,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/inventory/">
                             <i class="fas fa-boxes"></i> Inventory
+                            {% if global_low_stock_count > 0 %}
+                                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 0.7rem;">{{ global_low_stock_count }}</span>
+                            {% endif %}
                         </a>
                     </li>
                     <div class="nav-divider"></div>
@@ -521,6 +524,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/inventory/">
                             <i class="fas fa-boxes"></i> Inventory
+                            {% if global_low_stock_count > 0 %}
+                                <span class="badge bg-danger ms-auto rounded-pill" style="font-size: 0.7rem;">{{ global_low_stock_count }}</span>
+                            {% endif %}
                         </a>
                     </li>
                     <div class="nav-divider"></div>
@@ -534,6 +540,43 @@
 
             <!-- RIGHT CONTENT -->
             <div class="col-md-9 main-content">
+
+                <!-- GLOBAL TOP NAV -->
+                <div class="d-flex justify-content-end align-items-center mb-4 pb-2 border-bottom">
+                    <div class="dropdown">
+                        <button class="btn btn-light position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-bell fs-5 text-secondary"></i>
+                            {% if global_low_stock_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-white">
+                                {{ global_low_stock_count }}
+                                <span class="visually-hidden">unread messages</span>
+                            </span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="notificationDropdown" style="width: 320px; border-radius: 12px; overflow: hidden;">
+                            <li class="px-3 py-2 bg-light border-bottom fw-bold text-muted" style="font-size: 0.85rem; letter-spacing: 0.5px;">NOTIFICATIONS</li>
+                            {% if global_low_stock_count > 0 %}
+                                {% for item in global_low_stock_items|slice:":5" %}
+                                <li>
+                                    <a class="dropdown-item py-3 border-bottom d-flex align-items-start gap-3 flex-wrap text-wrap text-break" href="{% url 'inventory_dashboard' %}" style="white-space: normal;">
+                                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block text-dark">{{ item.name }}</strong>
+                                            <span class="text-danger small">Stock Low: {{ item.quantity }} {{ item.get_unit_display }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                                <li><a class="dropdown-item text-center py-2 text-primary fw-bold" href="{% url 'inventory_dashboard' %}" style="font-size: 0.9rem;">View All in Inventory &rarr;</a></li>
+                            {% else %}
+                                <li><div class="dropdown-item py-4 text-center text-muted"><i class="fas fa-check-circle fs-3 text-success mb-2 d-block"></i> <span class="d-block">All systems go!</span><span class="small d-block opacity-75">No immediate alerts</span></div></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
 
                 <div class="page-header">
                     <i class="fas fa-circle"></i>
