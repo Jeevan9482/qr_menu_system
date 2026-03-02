@@ -64,6 +64,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 import json
 from .models import Table
+from orders.models import Order
 import qrcode
 from io import BytesIO
 from django.core.files import File
@@ -72,11 +73,17 @@ from django.core.files import File
 @login_required
 def owner_tables(request):
     hotel = request.user.hotelowner.hotel
-    tables = Table.objects.filter(hotel=hotel)
+    tables = Table.objects.filter(hotel=hotel).order_by('table_number')
 
     for table in tables:
         if not table.qr_code:
             generate_qr_code(request, table)
+            
+        # Check if table has an active (incomplete) order
+        table.is_occupied = Order.objects.filter(
+            table=table,
+            is_completed=False
+        ).exists()
 
     return render(request, 'owner/tables.html', {'tables': tables})
 
